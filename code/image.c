@@ -587,6 +587,8 @@ turn_to_bin();
 /*提取赛道边界*/
 image_filter(bin_image);//滤波
 image_draw_rectan(bin_image);//预处理
+
+//对图像的补线应该在这里，二值化处理后，八邻域之前
 //清零
 data_stastics_l = 0;
 data_stastics_r = 0;
@@ -602,13 +604,20 @@ if (get_start_point(image_h - 2))//找到起点了，再执行八领域，没找到就一直找
 
 }
 
-    for (i = hightest; i <image_h-1; i++)
+    /*for (i = hightest; i <image_h-1; i++)
     {
         center_line[i] = (l_border[i] + r_border[i]) >> 1;//求中线
-    }
+    }*/
 }
 
-
+void GetCenterline()
+{
+    uint16 i;
+    for (i = hightest; i <image_h-1; i++)
+        {
+            center_line[i] = (l_border[i] + r_border[i]) >> 1;//求中线
+        }
+}
 
 
 

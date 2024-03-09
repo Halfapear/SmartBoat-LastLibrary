@@ -55,8 +55,6 @@ int main (void)
     pit_ms_init(PIT_CH, 1);                                                  // 初始化 PIT_CH0 为周期中断 1ms 周期
     interrupt_set_priority(PIT_PRIORITY, 0);                                    // 设置 PIT1 对周期中断的中断优先级为 0
 
-    uint16_t data[128];
-    int16_t data_index = 0;
     //float duty=90;
     // 此处编写用户代码 例如外设初始化代码等
     uint8_t List_Number=1;
@@ -101,11 +99,30 @@ int main (void)
                     stop();
                 }
         key_clear_all_state();
+
         if(mt9v03x_finish_flag==1)
         {
             mt9v03x_finish_flag=0;
             image_process();
 
+            GetLostTime();//获取一些辅助标志位
+            Get_Edge_Point();
+            //ring标志变化处，因为判断要用到左右边界
+            //如果是补边线的话，直接补顺序进行即可
+            //如果对图像进行补线，需要重*新*搜*线
+            if(rd.Ring_Flag==0)//圆环搜索
+            {
+                Ring_Search();
+            }
+            else if(rd.Ring_Flag==1)//左环
+            {
+
+            }
+            else if(rd.Ring_Flag==2)//右环
+            {
+
+            }
+            GetCenterline();
             Turn.Chazhi=Err_Sum();
 
         }
