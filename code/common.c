@@ -2,6 +2,7 @@
 #include "common.h"
 #include "motor.h"
 #include "servo.h"
+#include "camera.h"
 
 #define LED1_PIN E2
 #define BEEP                (C13)
@@ -70,4 +71,5 @@ void All_Init()
 
     mt9v03x_init();
     Para_init();
+    Round_init();
 }
