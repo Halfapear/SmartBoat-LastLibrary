@@ -48,6 +48,7 @@ void Round_init()
     rd.R_Edgepoint_y=0;
 
 }
+
 //获取左右边界的丢线次数
 void GetLostTime()
 {
@@ -68,7 +69,9 @@ void GetLostTime()
     rd.Left_Lost_Time=l_lost;
     rd.Right_Lost_Time=r_lost;
 }
+
 //圆环状态判断，即1状态判断
+//图像太抽象了，再确认下图像，根据图像改一下条件
 int Ring_Start_Test()
 {
     if(rd.Left_Lost_Time>rd.Right_Lost_Time&&
@@ -120,7 +123,7 @@ void Get_Edge_Point()
 
     }
 }
-//圆环搜索
+//圆环搜索-理论是连续n幅图像符合圆环就进圆环状态机，n根据实际情况改
 void Ring_Search()
 {
     rd.Ring_Start=Ring_Start_Test();
@@ -144,6 +147,69 @@ void Ring_Search()
            rd.Ring_Flag=1;
      else if(rd.Ring_Start_R>=3)//连续三幅图右环标志，进右环处理
            rd.Ring_Flag=2;
+}
+//左环状态机
+void Left_Ring()
+{
+    rd.state=1;
+    int16 L1,L2;
+    //L1=l_border[Continuity_Change_Left(80,30)];
+    if(rd.state==1)
+    {
+
+        if(Find_Right_Down_Point(118,60)==0)
+        {
+            rd.state=2;
+        }
+    }
+
+}
+//右环状态机
+void Right_Ring()
+{
+    rd.state=1;
+    float k=0;
+    int16 L1;
+    int16 L2;
+    if(rd.state==1)
+    {
+        L1=Find_Right_Down_Point(119,70);//角点
+        L2=Monotonicity_Change_Right(70,25);//单调突变点
+        Draw_Line(r_border[L1], L1, r_border[L2], L2);
+        if(k==0)
+        {
+            k=(188-rd.R_Edgepoint_x)/(188-r_border[L2]);
+        }
+        image_process();
+        if(Find_Right_Down_Point(118,60)==0)
+            rd.state=2;
+    }
+    else if(rd.state==2)
+    {
+        L2=Monotonicity_Change_Right(80,25);
+        L1=188-(k*(188-r_border[L2]));
+        Draw_Line(r_border[L1], L1, r_border[L2], L2);
+        image_process();
+        if(rd.R_Edgepoint_y>117||Monotonicity_Change_Right(70,25)>50)
+            rd.state=3;
+    }
+    else if(rd.state==3)
+    {
+        L1=Continuity_Change_Right(110,30);
+        Draw_Line(rd.L_Edgepoint_x, rd.L_Edgepoint_y, r_border[L1], L1);
+        image_process();
+        if(Continuity_Change_Left(110,50)==0&&Continuity_Change_Right(110,50)==0)
+            rd.state=4;
+    }
+    else if(rd.state==4)
+    {
+        if(Continuity_Change_Left(110,40)!=0)
+            rd.state=5;
+    }
+    else if(rd.state==5)
+    {
+
+    }
 }
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     右下角点检测

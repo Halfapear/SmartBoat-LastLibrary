@@ -117,6 +117,7 @@ int main (void)
             else if(rd.Ring_Flag==1)//×ó»·
             {
 
+
             }
             else if(rd.Ring_Flag==2)//ÓÒ»·
             {

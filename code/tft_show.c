@@ -2,6 +2,7 @@
 #include "tft_show.h"
 #include "motor.h"
 #include "image.h"
+#include "camera.h"
 
 #define LED1                (E2 )
 uint8_t *List_Number_p;
@@ -117,12 +118,16 @@ void Button_Up_Click(uint8_t Menu_List,uint8_t* List_Number_p)
 void Display_Grayscale_Image(void)
 {
     tft180_set_dir(TFT180_CROSSWISE);                                           // 需要先横屏 不然显示不下
-    /*tft180_show_int(0,0,Turn.Chazhi,4);
-            tft180_show_int(0,16,Turn.PWM_Dout,5);
 
-            tft180_show_int(0,16*2,Turn.PWM_Lout,5);
-            tft180_show_int(0,16*3,Turn.PWM_Rout,5);*/
-    tft180_show_gray_image(0,0,mt9v03x_image[0],image_w,image_h,160,128,0);
+            //tft180_show_int(0,16*4,encoder_data_quaddec ,5);
+
+    //tft180_show_gray_image(0,0,mt9v03x_image[0],image_w,image_h,160,128,0);
+    tft180_show_gray_image(0,0,bin_image[0],image_w,image_h,160,128,0);
+    tft180_show_int(0,0,Speed.Speed_Car,4);
+                tft180_show_int(0,16,Speed.P_Error,5);
+
+                tft180_show_int(0,16*2,Turn.PWM_Lout,5);
+                tft180_show_int(0,16*3,Turn.PWM_Rout,5);
     for (int16 i = 0; i <image_h-1; i++)
        {
         tft180_draw_point(94,i,RGB565_YELLOW);
@@ -159,7 +164,8 @@ void Display_Initial_Menu()
     tft180_show_string ( 0,  16*3, "4.Speed.I");
     tft180_show_string ( 0,  16*4, "5.Speed.D");
     tft180_show_string ( 0,  16*5, "6.Turn.P");
-    tft180_show_string ( 0,  16*6, "7.Turn.D");
+    //tft180_show_string ( 0,  16*6, "7.Turn.D");
+    tft180_show_int (0, 16*6,  encoder_data_quaddec,4);
 //不是 显示汉字和显示字符串有什么区别：这个函数可能不支持直接显示非ASCII字符，比如汉字等
 }
 
