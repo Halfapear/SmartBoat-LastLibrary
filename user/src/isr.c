@@ -339,6 +339,10 @@ void TIM3_IRQHandler(void)
               if(ms%20==0)
               {
                  GetSpeed();
+                 if(rd.state==3)
+                 {
+                     encoder_derdate+=encoder_data_quaddec;
+                 }
               }
 
               if(s<=3)
@@ -365,6 +369,9 @@ void TIM3_IRQHandler(void)
                   TurnPD_Control();
                   PWM_Out();
               }
+
+              if(rd.state==9)
+                  rd.Ring_Leave_time++;
 
               ms++;
 

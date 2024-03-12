@@ -110,19 +110,16 @@ int main (void)
             //ring标志变化处，因为判断要用到左右边界
             //如果是补边线的话，直接补顺序进行即可
             //如果对图像进行补线，需要重*新*搜*线
-            if(rd.Ring_Flag==0)//圆环搜索
-            {
+            if(rd.Ring_Flag==0){//圆环搜索
                 Ring_Search();
             }
-            else if(rd.Ring_Flag==1)//左环
-            {
-
-
+            else if(rd.Ring_Flag==1){//左环
+                Left_Ring();
             }
-            else if(rd.Ring_Flag==2)//右环
-            {
-
+            else if(rd.Ring_Flag==2){//右环
+                Right_Ring();//写完了，但感觉跑不起来
             }
+
             GetCenterline();
             Turn.Chazhi=Err_Sum();
 
