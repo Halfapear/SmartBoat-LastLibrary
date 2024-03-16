@@ -28,8 +28,8 @@ PWM_Output PWM;
 Turn_ct Turn;
 int16 bl_duty=0;
 
-int16 maxspeed=4000;
-int16 max_angle=40;
+int16 maxspeed=6000;
+int16 max_angle=60;
 
 
 int16 zhuanjiaozhi=0;
@@ -42,7 +42,7 @@ void Para_init()
     bl_duty=880;//无刷电机调速
     PWM.Left_Out=0;
     PWM.Right_Out=0;
-    Speed.Set_Speed=2000;
+    Speed.Set_Speed=5000;
     //Speed.Speed_Max=4000;
 
     Speed.Speed_Now=0;
@@ -57,8 +57,8 @@ void Para_init()
     Speed.derivative=0;
 
     Speed.P=1.1;
-    Speed.I=0.5;
-    Speed.D=0;
+    Speed.I=0.2;
+    Speed.D=1;
 
     Speed.Output_PWM=0;
 
@@ -68,9 +68,9 @@ void Para_init()
     Turn.PWM_Lout=0;
     Turn.PWM_Rout=0;
 
-    Turn.P=1.2;
+    Turn.P=1.1;
     Turn.I=0;
-    Turn.D=5;
+    Turn.D=-5;
 }
 //编码器速度获取与处理
 //测速轮直径-3.3cm
@@ -91,15 +91,18 @@ float constrain_float(float amt, float low, float high)
 //速度环pid
 void SpeedPID_Control()
 {
-    Speed.Error=Speed.Set_Speed-Speed.Speed_Car;
-    Speed.P_Error=Speed.Error-Speed.L_Error;
-    Speed.I_Error=Speed.Error;
-    Speed.D_Error=(Speed.Error-Speed.L_Error)-Speed.derivative;
-
-    Speed.derivative=Speed.Error-Speed.L_Error;
-    Speed.L_Error=Speed.Error;
+    Speed.Error=(Speed.Set_Speed-Speed.Speed_Car);
+    Speed.Integral+=Speed.Error;
+    Speed.Integral=constrain_float(Speed.Integral,-300,300);
+    Speed.P_Error=Speed.Error;                                          //比例环节
+    Speed.I_Error=Speed.Integral;                    //积分环节
+    Speed.D_Error=Speed.Error-Speed.L_Error;                            //微分环节
 
     Speed.Output_PWM=Speed.P*Speed.P_Error+Speed.I*Speed.I_Error+Speed.D*Speed.D_Error;
+    if(Speed.Output_PWM>4000)
+        Speed.Output_PWM=4000;
+    else if(Speed.Output_PWM<-4000)
+        Speed.Output_PWM=-4000;
 
 }
 //转向环pd

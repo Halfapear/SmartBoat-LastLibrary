@@ -36,6 +36,8 @@
 #include "zf_common_headfile.h"
 #include "common.h"
 #include "motor.h"
+#include "camera.h"
+#define BEEP                (C13)
 #define ENCODER_QUADDEC                 (TIM9_ENCOEDER)
 void NMI_Handler(void)       __attribute__((interrupt()));
 void HardFault_Handler(void) __attribute__((interrupt()));
@@ -316,15 +318,31 @@ void TIM3_IRQHandler(void)
                   gpio_toggle_level(E2);
 
               }
+              if(rd.Ring_Flag!=0&&b_s==0)
+              {
+                  gpio_set_level(BEEP, GPIO_HIGH);
+                  b_s=1;
+              }
               if(ms==1000)
               {
                   //gpio_toggle_level(E9);
                    s++;
                    ms=0;
+                   if(b_s>=1&&b_s<5)
+                       b_s++;
+              }
+              if(b_s>=3)
+              {
+                  gpio_set_level(BEEP, GPIO_LOW);
+
               }
               if(ms%20==0)
               {
                  GetSpeed();
+                 if(rd.state==3)
+                 {
+                     encoder_derdate+=encoder_data_quaddec;
+                 }
               }
 
               if(s<=3)
@@ -343,14 +361,17 @@ void TIM3_IRQHandler(void)
               }
               if(ms%4==0)
               {
-                  Speed.Output_PWM=3000;
-                  //SpeedPID_Control();
+                  //Speed.Output_PWM=4000;
+                  SpeedPID_Control();
               }
               if(ms%2==0)
               {
                   TurnPD_Control();
                   PWM_Out();
               }
+
+              if(rd.state==9)
+                  rd.Ring_Leave_time++;
 
               ms++;
 

@@ -1,5 +1,6 @@
 #ifndef __TFT_SHOW_H__
 #define __TFT_SHOW_H__
+#include "common.h"
 
 #define KEY1                    (C9 )                                           // 使用的外部中断输入引脚 如果修改 需要同步对应修改外部中断编号与 isr.c 中的调用
 #define KEY2                    (D8 )                                           // 使用的外部中断输入引脚 如果修改 需要同步对应修改外部中断编号与 isr.c 中的调用

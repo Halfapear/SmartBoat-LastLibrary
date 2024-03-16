@@ -2,6 +2,15 @@
 
 Round rd;
 #define Search_Stop_Line 50
+
+int Left_Lost_Flag[MT9V03X_H] ; //左丢线数组，丢线置1，没丢线置0
+
+int Right_Lost_Flag[MT9V03X_H] ; //左丢线数组，丢线置1，没丢线置0
+int16 monotonicity_change_line[2];
+int16 Right_Up_Guai[2];
+int16 Left_Up_Guai[2];
+int16 island_state_5_down[2];
+int16 island_state_3_up[2];
 //加权控制
 const uint8 Weight[MT9V03X_H]=
 {
@@ -46,8 +55,26 @@ void Round_init()
     rd.L_Edgepoint_y=0;
     rd.R_Edgepoint_x=0;
     rd.R_Edgepoint_y=0;
+    rd.Ring_Leave_time=0;
+
+    monotonicity_change_line[0]=0;
+    monotonicity_change_line[1]=0;
+    Right_Up_Guai[0]=0;
+    Right_Up_Guai[1]=0;
+    Left_Up_Guai[0]=0;
+    Left_Up_Guai[1]=0;
+    island_state_5_down[0]=0;
+    island_state_5_down[1]=0;
+    island_state_3_up[0]=0;
+    island_state_3_up[1]=0;
+    for(int16 i=0;i<MT9V03X_H;i++)
+    {
+        Left_Lost_Flag[i]=0;
+        Right_Lost_Flag[i]=0;
+    }
 
 }
+
 //获取左右边界的丢线次数
 void GetLostTime()
 {
@@ -58,17 +85,21 @@ void GetLostTime()
     {
         if(l_border[i]==border_min)
         {
+            Left_Lost_Flag[i]=1;
             l_lost++;
         }
         else if(r_border[i]==border_max)
         {
+            Right_Lost_Flag[i]=1;
             r_lost++;
         }
     }
     rd.Left_Lost_Time=l_lost;
     rd.Right_Lost_Time=r_lost;
 }
+
 //圆环状态判断，即1状态判断
+//图像太抽象了，再确认下图像，根据图像改一下条件
 int Ring_Start_Test()
 {
     if(rd.Left_Lost_Time>rd.Right_Lost_Time&&
@@ -120,7 +151,7 @@ void Get_Edge_Point()
 
     }
 }
-//圆环搜索
+//圆环搜索-理论是连续n幅图像符合圆环就进圆环状态机，n根据实际情况改
 void Ring_Search()
 {
     rd.Ring_Start=Ring_Start_Test();
@@ -144,6 +175,262 @@ void Ring_Search()
            rd.Ring_Flag=1;
      else if(rd.Ring_Start_R>=3)//连续三幅图右环标志，进右环处理
            rd.Ring_Flag=2;
+}
+//左环状态机
+void Left_Ring()
+{
+    rd.state=1;
+    float k=0;
+    if(rd.state==1)
+            {
+                monotonicity_change_line[0]=Monotonicity_Change_Left(30,5);//寻找单调性改变点
+                monotonicity_change_line[1]=l_border[monotonicity_change_line[0]];
+                Left_Add_Line((int)(monotonicity_change_line[1]*0.15),MT9V03X_H-1,monotonicity_change_line[1],monotonicity_change_line[0]);
+                if((rd.state==1)&&(rd.L_Edgepoint_y<=50))//下方当丢线时候进2
+                {
+                    rd.state=2;
+                }
+            }
+    else if(rd.state==2)//下方角点消失，2状态时下方应该是丢线，上面是弧线
+            {
+                monotonicity_change_line[0]=Monotonicity_Change_Left(70,10);//寻找单调性改变点
+                monotonicity_change_line[1]=l_border[monotonicity_change_line[0]];
+                Left_Add_Line((int)(monotonicity_change_line[1]*0.1),MT9V03X_H-1,monotonicity_change_line[1],monotonicity_change_line[0]);
+                if(rd.state==2&&(rd.L_Edgepoint_y>=MT9V03X_H-5||monotonicity_change_line[0]>50))//当圆弧靠下时候，进3
+                {
+                    rd.state=0;//最长白列寻找范围也要改，见camera.c
+                    //Left_Island_Flag=0;
+                }
+            }
+    else if(rd.state==3)//3状态准备进环，寻找上拐点，连线
+            {
+                if(k!=0)
+                {
+                    K_Draw_Line(k,MT9V03X_W-30,MT9V03X_H-1,0);//k是刚刚算出来的，静态变量存着
+                    image_process();//刷新边界数据
+                }
+                else
+                {
+                    Left_Up_Guai[0]=Find_Left_Up_Point(40,5);//找左上拐点
+                    Left_Up_Guai[1]=l_border[Left_Up_Guai[0]];
+                    if (Left_Up_Guai[0]<5)//这里改过啊!!!!
+                    {
+                        rd.state=0;
+                        rd.Ring_Flag=0;
+                    }
+                    if(k==0&&(15<=Left_Up_Guai[0]&&Left_Up_Guai[0]<50)&&(50<Left_Up_Guai[1]&&Left_Up_Guai[1]<110))//拐点出现在一定范围内，认为是拐点出现
+                    {
+                        island_state_3_up[0]= Left_Up_Guai[0];
+                        island_state_3_up[1]= Left_Up_Guai[1];
+                        k=(float)((float)(MT9V03X_H-island_state_3_up[0])/(float)(MT9V03X_W-20-island_state_3_up[1]));
+                        K_Draw_Line(k,MT9V03X_W-30,MT9V03X_H-1,0);//记录下第一次上点出现时位置，针对这个环岛拉一条死线，入环
+                        image_process();//刷新边界数据
+                    }
+                }
+                if((rd.state==3)&&(encoder_derdate>=2000))//暂时使用编码器计数来转换状态，后续考虑换陀螺仪
+                {
+                          k=0;//斜率清零
+                          encoder_derdate=0;
+                          rd.state=4;
+                          image_process();//重新扫线
+                }
+            }
+    else if(rd.state==4)//状态4已经在里面
+            {
+
+                    monotonicity_change_line[0]=Monotonicity_Change_Right(MT9V03X_H-10,10);//单调性改变
+                    monotonicity_change_line[1]=r_border[monotonicity_change_line[0]];
+                    if((rd.state==4)&&(35<=monotonicity_change_line[0]&&monotonicity_change_line[0]<=55&&monotonicity_change_line[1]>=10))//单调点靠下，进去5
+                    {//monotonicity_change_line[1]>=90&&
+                        island_state_5_down[0]=MT9V03X_H-1;
+                        island_state_5_down[1]=r_border[MT9V03X_H-1];
+                        k=(float)((float)(MT9V03X_H-monotonicity_change_line[0])/(float)(island_state_5_down[1]-monotonicity_change_line[1]));
+                        K_Add_Boundry_Right(k,island_state_5_down[1],island_state_5_down[0],0);//和状态3一样，记住斜率
+                        rd.state=5;
+                    }
+
+            }
+            else if(rd.state==5)//出环
+            {
+                K_Add_Boundry_Right(k,island_state_5_down[1],island_state_5_down[0],0);
+                if((rd.state==5)&&(rd.R_Edgepoint_y<MT9V03X_H-20))//右边先丢线
+                {
+                    rd.state=6;
+                }
+            }
+            else if(rd.state==6)//还在出
+            {
+                K_Add_Boundry_Right(k,island_state_5_down[1],island_state_5_down[0],0);
+                if((rd.state==6)&&(rd.R_Edgepoint_y>MT9V03X_H-10))//右边不丢线-陀螺仪待补充
+                {//
+                    k=0;
+                    rd.state=7;
+                }
+            }
+            else if(rd.state==7)//基本出去了，在寻找拐点，准备离开环岛状态
+                    {
+                        Left_Up_Guai[0]=Find_Left_Up_Point(MT9V03X_H-10,0);//获取左上点坐标，坐标点合理去8
+                        Left_Up_Guai[1]=l_border[Left_Up_Guai[0]];
+                        if((rd.state==7)&&(Left_Up_Guai[1]<=100)&&(5<=Left_Up_Guai[0]&&Left_Up_Guai[0]<=MT9V03X_H-20))//注意这里，对横纵坐标都有要求
+                        {
+                            rd.state=8;//基本上找到拐点就去8
+                        }
+                    }
+                    else if(rd.state==8)//连线，出环最后一步
+                    {
+                        Left_Up_Guai[0]=Find_Left_Up_Point(MT9V03X_H-1,10);//获取左上点坐标
+                        Left_Up_Guai[1]=l_border[Left_Up_Guai[0]];
+                        Lengthen_Left_Boundry(Left_Up_Guai[0]-1,MT9V03X_H-1);
+                        if((rd.state==8)&&(Left_Up_Guai[0]>=MT9V03X_H-20||(Left_Up_Guai[0]<10&&rd.L_Edgepoint_y>=MT9V03X_H-10)))//当拐点靠下时候，认为出环了，环岛结束
+                        {//要么拐点靠下，要么拐点丢了，切下方不丢线，认为环岛结束了
+                            //FJ_Angle=0;//数据清零
+                            rd.state=9;//8时候环岛基本结束了，为了防止连续判环，8后会进9，大概几十毫秒后归零，
+                            //rd.Ring_Flag=0;
+                        }
+                    }
+                    else if(rd.state==9)
+                        {
+                            if(rd.Ring_Leave_time>=1000)
+                            {
+                                rd.state=0;
+                                rd.Ring_Flag=0;
+                                k=0;
+                                rd.Ring_Leave_time=0;
+                            }
+                        }
+
+}
+//右环状态机
+void Right_Ring()
+{
+    rd.state=1;
+    float k=0;
+    if(rd.state==1)
+    {
+        monotonicity_change_line[0]=Monotonicity_Change_Right(30,5);//单调性改变
+        monotonicity_change_line[1]=r_border[monotonicity_change_line[0]];
+        Right_Add_Line((int)(MT9V03X_W-1-(monotonicity_change_line[1]*0.15)),MT9V03X_H-1,monotonicity_change_line[1],monotonicity_change_line[0]);
+        if(rd.R_Edgepoint_y<=50)//右下角先丢线
+        {
+              rd.state=2;
+        }
+    }
+    else if(rd.state==2)//2状态下方丢线，上方即将出现大弧线
+    {
+        monotonicity_change_line[0]=Monotonicity_Change_Right(70,5);//单调性改变
+        monotonicity_change_line[1]=r_border[monotonicity_change_line[0]];
+        //Draw_Line((int)(MT9V03X_W-1-(monotonicity_change_line[1]*k)),MT9V03X_H-1,monotonicity_change_line[1],monotonicity_change_line[0]);
+        //image_process();
+        Right_Add_Line((int)(MT9V03X_W-1-(monotonicity_change_line[1]*k)),MT9V03X_H-1,monotonicity_change_line[1],monotonicity_change_line[0]);
+//            if(rd.state==2&&(Boundry_Start_Right>=MT9V03X_H-10))//右下角再不丢线进3
+        if(rd.state==2&&(rd.R_Edgepoint_y>=MT9V03X_H-5||monotonicity_change_line[0]>50))//右下角再不丢线进3
+        {
+            rd.state=3;//下方丢线，说明大弧线已经下来了
+            k=0;
+        }
+    }
+    else if(rd.state==3)//下面已经出现大弧线，且上方出现角点
+         {
+             if(k!=0)//已经找到点了，画一条死线
+             {
+                 K_Draw_Line(k,30,MT9V03X_H-1,0);
+                 image_process();//重新扫线
+             }
+             else//还在找点
+             {
+                 Right_Up_Guai[0]=Find_Right_Up_Point(40,10);//找右上拐点
+                 Right_Up_Guai[1]=r_border[Right_Up_Guai[0]];
+                 if(Right_Up_Guai[0]<10)//角点位置不对，退出环岛
+                 {
+                     rd.state=0;
+                     rd.Ring_Flag=0;
+                 }
+                 if(k==0&&(15<=Right_Up_Guai[0]&&Right_Up_Guai[0]<50)&&(70<Right_Up_Guai[1]&&Right_Up_Guai[1]<150))
+                 {//当角点出现在给定范围内
+                     //island_state_3_up[0]= Right_Up_Guai[0];
+                     //island_state_3_up[1]= Right_Up_Guai[1];
+                     k=(float)((float)(MT9V03X_H-Right_Up_Guai[0])/(float)(20-Right_Up_Guai[1]));
+                     K_Draw_Line(k,30,MT9V03X_H-1,0);
+                     image_process();//刷新赛道数据
+                 }
+             }
+             if((rd.state==3)&&(encoder_derdate>=2000))//暂时使用编码器计数来转换状态，后续考虑换陀螺仪
+             {
+                 k=0;//斜率清零
+                 encoder_derdate=0;
+                 rd.state=4;
+                 image_process();//重新扫线
+             }
+         }
+    else if(rd.state==4)//环内状态，无特殊处理
+    {
+        monotonicity_change_line[0]=Monotonicity_Change_Left(90,10);//单调性改变
+        monotonicity_change_line[1]=l_border[monotonicity_change_line[0]];
+        if(rd.state==4&&Continuity_Change_Left(110,40)!=0)//有陀螺仪后添加陀螺仪判据，积分满220以上
+        {
+            island_state_5_down[0]=MT9V03X_H-1;
+            island_state_5_down[1]=l_border[MT9V03X_H-1]-5;
+            if(k==0)
+                k=(float)((float)(MT9V03X_H-monotonicity_change_line[0])/(float)(island_state_5_down[1]-monotonicity_change_line[1]));
+            K_Add_Boundry_Left(k,island_state_5_down[1],island_state_5_down[0],0);  //总感觉这个补线会出问题，有空再看看
+            rd.state=5;
+        }
+    }
+    else if(rd.state==5)//准备出环岛
+    {
+         K_Add_Boundry_Left(k,island_state_5_down[1],island_state_5_down[0],0);
+         if(rd.state==5&&rd.L_Edgepoint_y<MT9V03X_H-20)//左边先丢线
+         {
+               rd.state=6;
+         }
+    }
+    else if(rd.state==6)//继续出
+         {
+             K_Add_Boundry_Left(k,island_state_5_down[1],island_state_5_down[0],0);
+             if((rd.state==6)&&(rd.L_Edgepoint_y>MT9V03X_H-10))//左边先丢线-此处可以添加陀螺仪判据积分300度
+             {//
+                 k=0;
+                 rd.state=7;
+             }
+         }
+    else if(rd.state==7)//基本出环岛，找角点
+          {
+              Right_Up_Guai[0]=Find_Right_Up_Point(MT9V03X_H-10,0);//获取左上点坐标，找到了去8
+              Right_Up_Guai[1]=r_border[Right_Up_Guai[0]];
+              if((rd.state==7)&&((Right_Up_Guai[1]>=MT9V03X_W-88&&(5<=Right_Up_Guai[0]&&Right_Up_Guai[0]<=MT9V03X_H-20))))//注意这里，对横纵坐标都有要求，因为赛道不一样，会意外出现拐点
+              {//当角点位置合理时，进8
+                  rd.state=8;
+              }
+          }
+    else if(rd.state==8)//环岛8
+            {
+                Right_Up_Guai[0]=Find_Right_Up_Point(MT9V03X_H-1,10);//获取右上点坐标
+                Right_Up_Guai[1]=r_border[Right_Up_Guai[0]];
+                //Lengthen_Right_Boundry(Right_Up_Guai[0]-1,MT9V03X_H-1);
+                if(k==0)
+                {
+                    k=(float)(5/(r_border[Right_Up_Guai[0]-5]-Right_Up_Guai[1]));
+                }
+                //K_Add_Boundry_Right(k,Right_Up_Guai[1],MT9V03X_H-1,Right_Up_Guai[0]);//补右边线
+                K_Draw_Line(k, MT9V03X_W-5, MT9V03X_H-1, Right_Up_Guai[0]);
+                image_process();
+                if((rd.state==8)&&(Right_Up_Guai[0]>=MT9V03X_H-20||(Right_Up_Guai[0]<10&&rd.L_Edgepoint_y>=MT9V03X_H-10)))//当拐点靠下时候，认为出环了，环岛结束
+                {//角点靠下，或者下端不丢线，认为出环了
+                    //FJ_Angle=0;
+                    rd.state=9;
+                    rd.Ring_Flag=0;
+                }
+            }
+    else if(rd.state==9)
+    {
+        if(rd.Ring_Leave_time>=1000)
+        {
+            rd.state=0;
+            rd.Ring_Flag=0;
+            k=0;
+            rd.Ring_Leave_time=0;
+        }
+    }
 }
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     右下角点检测
@@ -187,6 +474,89 @@ int Find_Right_Down_Point(int start,int end)//找四个角点，返回值是角点所在的行数
     return right_down_line;
 }
 /*-------------------------------------------------------------------------------------------------------------------
+  @brief     右上角点检测
+  @param     起始点，终止点
+  @return    返回角点所在的行数，找不到返回0
+  Sample     Find_Right_Up_Point(int start,int end);
+  @note      角点检测阈值可根据实际值更改
+-------------------------------------------------------------------------------------------------------------------*/
+int Find_Right_Up_Point(int start,int end)//找四个角点，返回值是角点所在的行数
+{
+    int i,t;
+    int right_up_line=0;
+    if(rd.Right_Lost_Time>=0.9*MT9V03X_H)//大部分都丢线，没有拐点判断的意义
+        return right_up_line;
+    if(start<end)
+    {
+        t=start;
+        start=end;
+        end=t;
+    }
+    if(end<=MT9V03X_H-Search_Stop_Line)//搜索截止行往上的全都不判
+        end=MT9V03X_H-Search_Stop_Line;
+    if(end<=5)//及时最长白列非常长，也要舍弃部分点，防止数组越界
+        end=5;
+    if(start>=MT9V03X_H-1-5)
+        start=MT9V03X_H-1-5;
+    for(i=start;i>=end;i--)
+    {
+        if(right_up_line==0&&//只找第一个符合条件的点
+           abs(r_border[i]-r_border[i-1])<=5&&//下面两行位置差不多
+           abs(r_border[i-1]-r_border[i-2])<=5&&
+           abs(r_border[i-2]-r_border[i-3])<=5&&
+              (r_border[i]-r_border[i+2])<=-8&&
+              (r_border[i]-r_border[i+3])<=-15&&
+              (r_border[i]-r_border[i+4])<=-15)
+        {
+            right_up_line=i;//获取行数即可
+            break;
+        }
+    }
+    return right_up_line;
+}
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     左上角点检测
+  @param     起始点，终止点
+  @return    返回角点所在的行数，找不到返回0
+  Sample     Find_Left_Up_Point(int start,int end);
+  @note      角点检测阈值可根据实际值更改
+-------------------------------------------------------------------------------------------------------------------*/
+int Find_Left_Up_Point(int start,int end)//找四个角点，返回值是角点所在的行数
+{
+    int i,t;
+    int left_up_line=0;
+    if(rd.Left_Lost_Time>=0.9*MT9V03X_H)//大部分都丢线，没有拐点判断的意义
+       return left_up_line;
+    if(start<end)
+    {
+        t=start;
+        start=end;
+        end=t;
+    }
+    if(end<=MT9V03X_H-Search_Stop_Line)//搜索截止行往上的全都不判
+        end=MT9V03X_H-Search_Stop_Line;
+    if(end<=5)//及时最长白列非常长，也要舍弃部分点，防止数组越界
+        end=5;
+    if(start>=MT9V03X_H-1-5)
+        start=MT9V03X_H-1-5;
+    for(i=start;i>=end;i--)
+    {
+        if(left_up_line==0&&//只找第一个符合条件的点
+           abs(l_border[i]-l_border[i-1])<=5&&
+           abs(l_border[i-1]-l_border[i-2])<=5&&
+           abs(l_border[i-2]-l_border[i-3])<=5&&
+              (l_border[i]-l_border[i+2])>=8&&
+              (l_border[i]-l_border[i+3])>=15&&
+              (l_border[i]-l_border[i+4])>=15)
+        {
+            left_up_line=i;//获取行数即可
+            break;
+        }
+    }
+    return left_up_line;//如果是MT9V03X_H-1，说明没有这么个拐点
+}
+
+/*-------------------------------------------------------------------------------------------------------------------
   @brief     左下角点检测
   @param     起始点，终止点
   @return    返回角点所在的行数，找不到返回0
@@ -217,9 +587,9 @@ int Find_Left_Down_Point(int start,int end)//找四个角点，返回值是角点所在的行数
            abs(l_border[i]-l_border[i+1])<=5&&//角点的阈值可以更改
            abs(l_border[i+1]-l_border[i+2])<=5&&
            abs(l_border[i+2]-l_border[i+3])<=5&&
-              (l_border[i]-l_border[i-2])<=-5&&
-              (l_border[i]-l_border[i-3])<=-10&&
-              (l_border[i]-l_border[i-4])<=-10)
+              (l_border[i]-l_border[i-2])>=5&&
+              (l_border[i]-l_border[i-3])>=10&&
+              (l_border[i]-l_border[i-4])>=10)
         {
             left_down_line=i;//获取行数即可
             break;
@@ -425,12 +795,12 @@ void K_Add_Boundry_Left(float k,int startX,int startY,int endY)
 }
 
 /*-------------------------------------------------------------------------------------------------------------------
-  @brief     通过斜率，定点补线--补右线
-  @param     k       输入斜率的相反数
+  @brief     通过斜率，定点补线
+  @param     k       输入斜率
              startY  输入起始点纵坐标
              endY    结束点纵坐标
-  @return    null
-  Sample     K_Add_Boundry_Left(float k,int startY,int endY);
+  @return    null    直接补边线
+  Sample     K_Add_Boundry_Right(float k,int startY,int endY);
   @note      补得线直接贴在边线上
 -------------------------------------------------------------------------------------------------------------------*/
 void K_Add_Boundry_Right(float k,int startX,int startY,int endY)
@@ -444,18 +814,15 @@ void K_Add_Boundry_Right(float k,int startX,int startY,int endY)
         endY=MT9V03X_H-1;
     else if(endY<=0)
         endY=0;
-    if(startY<endY)//--操作，start需要大
+    if(startY<endY)
     {
         t=startY;
         startY=endY;
         endY=t;
     }
-//这里有bug，下方循环--循环，需要start要大，只进行y的互换，但是没有进行x的互换
-//建议进行判断，如果start更小，那就进行++访问
-//这里修改各位自行操作
     for(i=startY;i>=endY;i--)
     {
-        r_border[i]=(int)((startY-i)/k+startX);//(y-y1)=k(x-x1)变形，x=(y-y1)/k+x1
+        r_border[i]=(int)((i-startY)/k+startX);//(y-y1)=k(x-x1)变形，x=(y-y1)/k+x1
         if(r_border[i]>=MT9V03X_W-1)
         {
             r_border[i]=MT9V03X_W-1;
@@ -497,6 +864,193 @@ void crosswalk(void) {
         }
     }
 }
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     左补线
+  @param     补线的起点，终点
+  @return    null
+  Sample     Left_Add_Line(int x1,int y1,int x2,int y2);
+  @note      补的直接是边界，点最好是可信度高的,不要乱补
+-------------------------------------------------------------------------------------------------------------------*/
+void Left_Add_Line(int x1,int y1,int x2,int y2)//左补线,补的是边界
+{
+    int i,max,a1,a2;
+    int hx;
+    if(x1>=MT9V03X_W-1)//起始点位置校正，排除数组越界的可能
+       x1=MT9V03X_W-1;
+    else if(x1<=0)
+        x1=0;
+     if(y1>=MT9V03X_H-1)
+        y1=MT9V03X_H-1;
+     else if(y1<=0)
+        y1=0;
+     if(x2>=MT9V03X_W-1)
+        x2=MT9V03X_W-1;
+     else if(x2<=0)
+             x2=0;
+     if(y2>=MT9V03X_H-1)
+        y2=MT9V03X_H-1;
+     else if(y2<=0)
+             y2=0;
+    a1=y1;
+    a2=y2;
+    if(a1>a2)//坐标互换
+    {
+        max=a1;
+        a1=a2;
+        a2=max;
+    }
+    for(i=a1;i<=a2;i++)//根据斜率补线即可
+    {
+        hx=(i-y1)*(x2-x1)/(y2-y1)+x1;
+        if(hx>=MT9V03X_W)
+            hx=MT9V03X_W;
+        else if(hx<=0)
+            hx=0;
+        l_border[i]=hx;
+    }
+}
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     右补线
+  @param     补线的起点，终点
+  @return    null
+  Sample     Right_Add_Line(int x1,int y1,int x2,int y2);
+  @note      补的直接是边界，点最好是可信度高的，不要乱补
+-------------------------------------------------------------------------------------------------------------------*/
+void Right_Add_Line(int x1,int y1,int x2,int y2)//右补线,补的是边界
+{
+    int i,max,a1,a2;
+    int hx;
+    if(x1>=MT9V03X_W-1)//起始点位置校正，排除数组越界的可能
+       x1=MT9V03X_W-1;
+    else if(x1<=0)
+        x1=0;
+    if(y1>=MT9V03X_H-1)
+        y1=MT9V03X_H-1;
+    else if(y1<=0)
+        y1=0;
+    if(x2>=MT9V03X_W-1)
+        x2=MT9V03X_W-1;
+    else if(x2<=0)
+        x2=0;
+    if(y2>=MT9V03X_H-1)
+        y2=MT9V03X_H-1;
+    else if(y2<=0)
+         y2=0;
+    a1=y1;
+    a2=y2;
+    if(a1>a2)//坐标互换
+    {
+        max=a1;
+        a1=a2;
+        a2=max;
+    }
+    for(i=a1;i<=a2;i++)//根据斜率补线即可
+    {
+        hx=(i-y1)*(x2-x1)/(y2-y1)+x1;
+        if(hx>=MT9V03X_W)
+            hx=MT9V03X_W;
+        else if(hx<=0)
+            hx=0;
+        r_border[i]=hx;
+    }
+}
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     左边界延长
+  @param     延长起始行数，延长到某行
+  @return    null
+  Sample     Stop_Detect(void)
+  @note      从起始点向上找5个点，算出斜率，向下延长，直至结束点
+-------------------------------------------------------------------------------------------------------------------*/
+void Lengthen_Left_Boundry(int start,int end)
+{
+    int i,t;
+    float k=0;
+    if(start>=MT9V03X_H-1)//起始点位置校正，排除数组越界的可能
+        start=MT9V03X_H-1;
+    else if(start<=0)
+        start=0;
+    if(end>=MT9V03X_H-1)
+        end=MT9V03X_H-1;
+    else if(end<=0)
+        end=0;
+    if(end<start)//++访问，坐标互换
+    {
+        t=end;
+        end=start;
+        start=t;
+    }
+
+    if(start<=5)//因为需要在开始点向上找3个点，对于起始点过于靠上，不能做延长，只能直接连线
+    {
+         Left_Add_Line(l_border[start],start,l_border[end],end);
+    }
+
+    else
+    {
+        k=(float)(l_border[start]-l_border[start-4])/5.0;//这里的k是1/斜率
+        for(i=start;i<=end;i++)
+        {
+            l_border[i]=(int)(i-start)*k+l_border[start];//(x=(y-y1)*k+x1),点斜式变形
+            if(l_border[i]>=MT9V03X_W-1)
+            {
+                l_border[i]=MT9V03X_W-1;
+            }
+            else if(l_border[i]<=0)
+            {
+                l_border[i]=0;
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     右左边界延长
+  @param     延长起始行数，延长到某行
+  @return    null
+  Sample     Stop_Detect(void)
+  @note      从起始点向上找3个点，算出斜率，向下延长，直至结束点
+-------------------------------------------------------------------------------------------------------------------*/
+void Lengthen_Right_Boundry(int start,int end)
+{
+    int i,t;
+    float k=0;
+    if(start>=MT9V03X_H-1)//起始点位置校正，排除数组越界的可能
+        start=MT9V03X_H-1;
+    else if(start<=0)
+        start=0;
+    if(end>=MT9V03X_H-1)
+        end=MT9V03X_H-1;
+    else if(end<=0)
+        end=0;
+    if(end<start)//++访问，坐标互换
+    {
+        t=end;
+        end=start;
+        start=t;
+    }
+
+    if(start<=5)//因为需要在开始点向上找3个点，对于起始点过于靠上，不能做延长，只能直接连线
+    {
+        Right_Add_Line(r_border[start],start,r_border[end],end);
+    }
+    else
+    {
+        k=(float)(r_border[start]-r_border[start-4])/5.0;//这里的k是1/斜率
+        for(i=start;i<=end;i++)
+        {
+            r_border[i]=(int)(i-start)*k+r_border[start];//(x=(y-y1)*k+x1),点斜式变形
+            if(r_border[i]>=MT9V03X_W-1)
+            {
+                r_border[i]=MT9V03X_W-1;
+            }
+            else if(r_border[i]<=0)
+            {
+                r_border[i]=0;
+            }
+        }
+    }
+}
+
 /*-------------------------------------------------------------------------------------------------------------------
   @brief     根据斜率划线
   @param     输入斜率，定点，画一条黑线

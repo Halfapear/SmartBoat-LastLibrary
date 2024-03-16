@@ -34,7 +34,9 @@
 #define ENCODER_QUADDEC_B               (TIM9_ENCOEDER_MAP3_CH2_D11)            // B 相对应的引脚
 int16 ms=0;
 int32 s=0;
+int16 b_s;
 int16 encoder_data_quaddec = 0;
+int16 encoder_derdate=0;
 void All_Init()
 {
     system_delay_ms(50);//系统延时
