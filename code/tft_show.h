@@ -21,6 +21,8 @@ void Adjust_SpeedI(void);
 void Adjust_SpeedD(void);
 void Adjust_TurnP(void);
 void Adjust_TurnD(void);
+void Adjust_max_angle(void);
+void Adjust_Set_Speed(void);
 
 
 

@@ -6,14 +6,14 @@
 
 #define LED1                (E2 )
 uint8_t *List_Number_p;
-#define image_h 120//Í¼Ïñ¸ß¶È
-#define image_w 188//Í¼Ïñ¿í¶È
-#define uesr_RED     0XF800    //ºìÉ«
-#define uesr_GREEN   0X07E0    //ÂÌÉ«
-#define uesr_BLUE    0X001F    //À¶É«
+#define image_h 120//Í¼ï¿½ï¿½ß¶ï¿½
+#define image_w 188//Í¼ï¿½ï¿½ï¿½ï¿½
+#define uesr_RED     0XF800    //ï¿½ï¿½É«
+#define uesr_GREEN   0X07E0    //ï¿½ï¿½É«
+#define uesr_BLUE    0X001F    //ï¿½ï¿½É«
 
-#define KEY3                    B12                                          // Ê¹ÓÃµÄÍâ²¿ÖÐ¶ÏÊäÈëÒý½Å Èç¹ûÐÞ¸Ä ÐèÒªÍ¬²½¶ÔÓ¦ÐÞ¸ÄÍâ²¿ÖÐ¶Ï±àºÅÓë isr.c ÖÐµÄµ÷ÓÃ
-#define KEY4                    B0                                           // Ê¹ÓÃµÄÍâ²¿ÖÐ¶ÏÊäÈëÒý½Å Èç¹ûÐÞ¸Ä ÐèÒªÍ¬²½¶ÔÓ¦ÐÞ¸ÄÍâ²¿ÖÐ¶Ï±àºÅÓë isr.c ÖÐµÄµ÷ÓÃ
+#define KEY3                    B12                                          // Ê¹ï¿½Ãµï¿½ï¿½â²¿ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Þ¸ï¿½ ï¿½ï¿½ÒªÍ¬ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Þ¸ï¿½ï¿½â²¿ï¿½Ð¶Ï±ï¿½ï¿½ï¿½ï¿½ isr.c ï¿½ÐµÄµï¿½ï¿½ï¿½
+#define KEY4                    B0                                           // Ê¹ï¿½Ãµï¿½ï¿½â²¿ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Þ¸ï¿½ ï¿½ï¿½ÒªÍ¬ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Þ¸ï¿½ï¿½â²¿ï¿½Ð¶Ï±ï¿½ï¿½ï¿½ï¿½ isr.c ï¿½ÐµÄµï¿½ï¿½ï¿½
 
 
 
@@ -27,54 +27,54 @@ uint16 loop_time = 0;
 
 
 void exti_initconfig (void){
-exti_init(KEY3, EXTI_TRIGGER_BOTH);                                         // ³õÊ¼»¯ KEY3 ÎªÍâ²¿ÖÐ¶ÏÊäÈë Ë«±ßÑØ´¥·¢
-exti_init(KEY4, EXTI_TRIGGER_BOTH);                                         // ³õÊ¼»¯ KEY4 ÎªÍâ²¿ÖÐ¶ÏÊäÈë Ë«±ßÑØ´¥·¢
+exti_init(KEY3, EXTI_TRIGGER_BOTH);                                         // ï¿½ï¿½Ê¼ï¿½ï¿½ KEY3 Îªï¿½â²¿ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ Ë«ï¿½ï¿½ï¿½Ø´ï¿½ï¿½ï¿½
+exti_init(KEY4, EXTI_TRIGGER_BOTH);                                         // ï¿½ï¿½Ê¼ï¿½ï¿½ KEY4 Îªï¿½â²¿ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ Ë«ï¿½ï¿½ï¿½Ø´ï¿½ï¿½ï¿½
 
-interrupt_set_priority(KEY3_EXTI, (0<<5) || 1);                             // ÉèÖÃ KEY3 ¶ÔÓ¦Íâ²¿ÖÐ¶ÏµÄÖÐ¶ÏÇÀÕ¼ÓÅÏÈ¼¶0£¬×ÓÓÅÏÈ¼¶1
-interrupt_set_priority(KEY4_EXTI, (0<<5) || 1);                             // ÉèÖÃ KEY4 ¶ÔÓ¦Íâ²¿ÖÐ¶ÏµÄÖÐ¶ÏÇÀÕ¼ÓÅÏÈ¼¶0£¬×ÓÓÅÏÈ¼¶1
+interrupt_set_priority(KEY3_EXTI, (0<<5) || 1);                             // ï¿½ï¿½ï¿½ï¿½ KEY3 ï¿½ï¿½Ó¦ï¿½â²¿ï¿½Ð¶Ïµï¿½ï¿½Ð¶ï¿½ï¿½ï¿½Õ¼ï¿½ï¿½ï¿½È¼ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½1
+interrupt_set_priority(KEY4_EXTI, (0<<5) || 1);                             // ï¿½ï¿½ï¿½ï¿½ KEY4 ï¿½ï¿½Ó¦ï¿½â²¿ï¿½Ð¶Ïµï¿½ï¿½Ð¶ï¿½ï¿½ï¿½Õ¼ï¿½ï¿½ï¿½È¼ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½1
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-// º¯Êý¼ò½é     KEY3 µÄ°´¼üÍâ²¿ÖÐ¶Ï´¦Àíº¯Êý Õâ¸öº¯Êý½«ÔÚ KEY3 Òý½Å¶ÔÓ¦µÄÍâ²¿ÖÐ¶Ïµ÷ÓÃ Ïê¼û isr.c
-// ²ÎÊýËµÃ÷     void
-// ·µ»Ø²ÎÊý     void
-// Ê¹ÓÃÊ¾Àý     key3_exti_handler();
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½     KEY3 ï¿½Ä°ï¿½ï¿½ï¿½ï¿½â²¿ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ KEY3 ï¿½ï¿½ï¿½Å¶ï¿½Ó¦ï¿½ï¿½ï¿½â²¿ï¿½Ð¶Ïµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ isr.c
+// ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½     void
+// ï¿½ï¿½ï¿½Ø²ï¿½ï¿½ï¿½     void
+// Ê¹ï¿½ï¿½Ê¾ï¿½ï¿½     key3_exti_handler();
 //-------------------------------------------------------------------------------------------------------------------
 void key3_exti_handler (void)
 {
     if(gpio_get_level(KEY3) == 0)
     {
         in_second_menu = 1;
-        exti_state[2] = 1;                                                      // Íâ²¿ÖÐ¶Ï´¥·¢ ±êÖ¾Î»ÖÃÎ»
+        exti_state[2] = 1;                                                      // ï¿½â²¿ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ ï¿½ï¿½Ö¾Î»ï¿½ï¿½Î»
     }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-// º¯Êý¼ò½é     KEY4 µÄ°´¼üÍâ²¿ÖÐ¶Ï´¦Àíº¯Êý Õâ¸öº¯Êý½«ÔÚ KEY4 Òý½Å¶ÔÓ¦µÄÍâ²¿ÖÐ¶Ïµ÷ÓÃ Ïê¼û isr.c
-// ²ÎÊýËµÃ÷     void
-// ·µ»Ø²ÎÊý     void
-// Ê¹ÓÃÊ¾Àý     key4_exti_handler();
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½     KEY4 ï¿½Ä°ï¿½ï¿½ï¿½ï¿½â²¿ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ KEY4 ï¿½ï¿½ï¿½Å¶ï¿½Ó¦ï¿½ï¿½ï¿½â²¿ï¿½Ð¶Ïµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ isr.c
+// ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½     void
+// ï¿½ï¿½ï¿½Ø²ï¿½ï¿½ï¿½     void
+// Ê¹ï¿½ï¿½Ê¾ï¿½ï¿½     key4_exti_handler();
 //-------------------------------------------------------------------------------------------------------------------
 void key4_exti_handler (void)
 
 {
     if(gpio_get_level(KEY4) == 0)
     {
-        //Õâ¸ö¶þ¼¶²Ëµ¥ÅÐ¶ÏÓ¦¸Ã·ÅÔÚ¶þ¼¶²Ëµ¥µÄÑ­»·
-        in_second_menu = 0;                                                     // ÉèÖÃ±êÖ¾Îª0£¬Ö¸Ê¾ÍË³ö¶þ¼¶²Ëµ¥
-        //Ó¦¸Ã²»»á²»Ã÷°×£¬Õâ¸öÊý×é¾ÍÊÇ´æ±êÊ¶µÄ
-        exti_state[3] = 1;                                                      // Íâ²¿ÖÐ¶Ï´¥·¢ ±êÖ¾Î»ÖÃÎ»
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½Ð¶ï¿½Ó¦ï¿½Ã·ï¿½ï¿½Ú¶ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½ï¿½Ñ­ï¿½ï¿½
+        in_second_menu = 0;                                                     // ï¿½ï¿½ï¿½Ã±ï¿½Ö¾Îª0ï¿½ï¿½Ö¸Ê¾ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½
+        //Ó¦ï¿½Ã²ï¿½ï¿½á²»ï¿½ï¿½ï¿½×£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç´ï¿½ï¿½Ê¶ï¿½ï¿½
+        exti_state[3] = 1;                                                      // ï¿½â²¿ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ ï¿½ï¿½Ö¾Î»ï¿½ï¿½Î»
     }
 }
 
 /*
-      * @brief  ÏòÉÏ·­Ò³£¬Ð§¹ûÊÇÏÔÊ¾µ±Ç°ËùÔÚÏîÄ¿Êý×Ö
-      Button_Click_Event_1 ¾ÍÊÇ Ä³Ò»¸ö°´¼ü ±ÈÈçµÚÒ»¸ö
-      x y Ê²Ã´µÄ¶¼»¹ÓÐ¿´Í¼ÅäÖÃ
-      * @param  Menu_List ×Ü¹²ÓÐ¶àÉÙÏî
-      * @retval ÎÞ
+      * @brief  ï¿½ï¿½ï¿½Ï·ï¿½Ò³ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½
+      Button_Click_Event_1 ï¿½ï¿½ï¿½ï¿½ Ä³Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
+      x y Ê²Ã´ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½Ð¿ï¿½Í¼ï¿½ï¿½ï¿½ï¿½
+      * @param  Menu_List ï¿½Ü¹ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½
+      * @retval ï¿½ï¿½
 */
-    //À¨ºÅÄÚÊÇperiod£¨ËäÈ»ÎÒ²»Ì«Çå³þÊ²Ã´Ê±ºòÓÃinit£©
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½periodï¿½ï¿½ï¿½ï¿½È»ï¿½Ò²ï¿½Ì«ï¿½ï¿½ï¿½Ê²Ã´Ê±ï¿½ï¿½ï¿½ï¿½initï¿½ï¿½
 void Button_Down_Click(uint8_t Menu_List,uint8_t * List_Number_p)
 {
 
@@ -90,9 +90,9 @@ void Button_Down_Click(uint8_t Menu_List,uint8_t * List_Number_p)
 }
 
 /*
-      * @brief  ÏòÏÂ·­Ò³£¬Ð§¹ûÊÇÏÔÊ¾µ±Ç°ËùÔÚÏîÄ¿Êý×Ö
-      * @param  Menu_List ×Ü¹²ÓÐ¶àÉÙÏî
-      * @retval ÎÞ
+      * @brief  ï¿½ï¿½ï¿½Â·ï¿½Ò³ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½
+      * @param  Menu_List ï¿½Ü¹ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½
+      * @retval ï¿½ï¿½
  */
 void Button_Up_Click(uint8_t Menu_List,uint8_t* List_Number_p)
 {
@@ -110,14 +110,14 @@ void Button_Up_Click(uint8_t Menu_List,uint8_t* List_Number_p)
 
 
 /*
-      * @brief  ÏÔÊ¾»Ò¶ÈÍ¼Ïñ£¨Àý³ÌÖÐ¾¹È»ÓÐ£¬Ì«Ê¡ÊÂÁË£©
-      * @param  ÎÞ
-      * @retval ÎÞ
+      * @brief  ï¿½ï¿½Ê¾ï¿½Ò¶ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¾ï¿½È»ï¿½Ð£ï¿½Ì«Ê¡ï¿½ï¿½ï¿½Ë£ï¿½
+      * @param  ï¿½ï¿½
+      * @retval ï¿½ï¿½
  */
 
 void Display_Grayscale_Image(void)
 {
-    tft180_set_dir(TFT180_CROSSWISE);                                           // ÐèÒªÏÈºáÆÁ ²»È»ÏÔÊ¾²»ÏÂ
+    tft180_set_dir(TFT180_CROSSWISE);                                           // ï¿½ï¿½Òªï¿½Èºï¿½ï¿½ï¿½ ï¿½ï¿½È»ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
 
             //tft180_show_int(0,16*4,encoder_data_quaddec ,5);
 
@@ -132,55 +132,56 @@ void Display_Grayscale_Image(void)
        {
         tft180_draw_point(94,i,RGB565_YELLOW);
         if(center_line[i]<160){
-                tft180_draw_point(center_line[i], i, uesr_RED);//ÏÔÊ¾Æðµã ÏÔÊ¾ÖÐÏß
+                tft180_draw_point(center_line[i], i, uesr_RED);//ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
                 }
                 if(l_border[i]<160)
                 {
-                    tft180_draw_point(l_border[i], i, uesr_GREEN);//ÏÔÊ¾Æðµã ÏÔÊ¾×ó±ßÏß
+                    tft180_draw_point(l_border[i], i, uesr_GREEN);//ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½
                 }
                 if(r_border[i]<160)
                 {
-                    tft180_draw_point(r_border[i], i, uesr_BLUE);//ÏÔÊ¾Æðµã ÏÔÊ¾ÓÒ±ßÏß
+                    tft180_draw_point(r_border[i], i, uesr_BLUE);//ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ ï¿½ï¿½Ê¾ï¿½Ò±ï¿½ï¿½ï¿½
                 }
        }
 
     }
 
-//¼¸¸ö¹Ì¶¨µÄ·ÅÉÏÃæ
+//ï¿½ï¿½ï¿½ï¿½ï¿½Ì¶ï¿½ï¿½Ä·ï¿½ï¿½ï¿½ï¿½ï¿½
 
 
 
 /*
-      * @brief  ÏÔÊ¾³õÊ¼²Ëµ¥£¬ÒÑ¾­ÅäÖÃºÃ
-      * @param  ÎÞ
-      * @retval ÎÞ
+      * @brief  ï¿½ï¿½Ê¾ï¿½ï¿½Ê¼ï¿½Ëµï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½Ãºï¿½
+      * @param  ï¿½ï¿½
+      * @retval ï¿½ï¿½
 */
 
 void Display_Initial_Menu()
 {
-    tft180_show_string ( 0,  16*0, "1.This is a menu");
-    tft180_show_string ( 0,  16*1, "2.Grayscale Image");
-    tft180_show_string ( 0,  16*2, "3.Speed.P");
-    tft180_show_string ( 0,  16*3, "4.Speed.I");
-    tft180_show_string ( 0,  16*4, "5.Speed.D");
-    tft180_show_string ( 0,  16*5, "6.Turn.P");
-    //tft180_show_string ( 0,  16*6, "7.Turn.D");
+
+    tft180_show_string ( 0,  16*0, "1.Grayscale Image");
+
+    tft180_show_string ( 0,  16*1, "2.Speed.P");
+    tft180_show_string ( 0,  16*2, "3.Speed.I");
+    tft180_show_string ( 0,  16*3, "4.Speed.D");
+    tft180_show_string ( 0,  16*4, "5.Turn.P");
+    tft180_show_string ( 0,  16*5, "6.Turn.D");
     tft180_show_int (0, 16*6,  encoder_data_quaddec,4);
-//²»ÊÇ ÏÔÊ¾ºº×ÖºÍÏÔÊ¾×Ö·û´®ÓÐÊ²Ã´Çø±ð£ºÕâ¸öº¯Êý¿ÉÄÜ²»Ö§³ÖÖ±½ÓÏÔÊ¾·ÇASCII×Ö·û£¬±ÈÈçºº×ÖµÈ
+//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Öºï¿½ï¿½ï¿½Ê¾ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½Ê²Ã´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü²ï¿½Ö§ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ASCIIï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½çººï¿½Öµï¿½
 }
 
 /*
-ps£ºÄãÎÊ½ÓÏÂÀ´¶þ¼¶½çÃæÄØ£¿¡ª¡ª¡ª¡ª¹À¼ÆÓÉ* List_Number_p¹ý¶É°É
-±ÈÈç£ºif(* List_Number_p = 2){
+psï¿½ï¿½ï¿½ï¿½ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½* List_Number_pï¿½ï¿½ï¿½É°ï¿½
+ï¿½ï¿½ï¿½ç£ºif(* List_Number_p = 2){
     Display_Color Image();
 }
 */
 
 
 /*
-      * @brief  µ÷½Úµç»ú1µÄPWMÖµ
-      * @param  PwmµÄCompareµØÖ·
-      * @retval Ö¸ÕëÖ±½Ó´«»ØÈ¥ÁË
+      * @brief  ï¿½ï¿½ï¿½Úµï¿½ï¿½1ï¿½ï¿½PWMÖµ
+      * @param  Pwmï¿½ï¿½Compareï¿½ï¿½Ö·
+      * @retval Ö¸ï¿½ï¿½Ö±ï¿½Ó´ï¿½ï¿½ï¿½È¥ï¿½ï¿½
  */
 
 
@@ -188,108 +189,148 @@ ps£ºÄãÎÊ½ÓÏÂÀ´¶þ¼¶½çÃæÄØ£¿¡ª¡ª¡ª¡ª¹À¼ÆÓÉ* List_Number_p¹ý¶É°É
 
 void Adjust_SpeedP(void) {
     if (KEY_SHORT_PRESS == key_get_state(KEY_1)) {
-        Speed.P += 0.1; // Ôö¼Ó²½³¤Îª0.1
+        Speed.P += 0.1; // ï¿½ï¿½ï¿½Ó²ï¿½ï¿½ï¿½Îª0.1
     }
     else if (KEY_SHORT_PRESS == key_get_state(KEY_2)) {
-        Speed.P -= 0.1; // ¼õÉÙ²½³¤Îª0.1
-        if (Speed.P < 0) Speed.P = 0; // ·ÀÖ¹ÏÂÒç
+        Speed.P -= 0.1; // ï¿½ï¿½ï¿½Ù²ï¿½ï¿½ï¿½Îª0.1
+        if (Speed.P < 0) Speed.P = 0; // ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½
     }
-    tft180_show_string ( 0,  16*0, "3.Speed.P");
+    tft180_show_string ( 0,  16*0, "2.Speed.P");
     tft180_show_float(0, 16*2, Speed.P, 1, 6);
 }
 
 void Adjust_SpeedI(void) {
     if (KEY_SHORT_PRESS == key_get_state(KEY_1)) {
-        Speed.I += 0.01; // Ôö¼Ó²½³¤Îª0.01
+        Speed.I += 0.01; // ï¿½ï¿½ï¿½Ó²ï¿½ï¿½ï¿½Îª0.01
     }
     else if (KEY_SHORT_PRESS == key_get_state(KEY_2)) {
-        Speed.I -= 0.01; // ¼õÉÙ²½³¤Îª0.01
-        if (Speed.I < 0) Speed.I = 0; // ·ÀÖ¹ÏÂÒç
+        Speed.I -= 0.01; // ï¿½ï¿½ï¿½Ù²ï¿½ï¿½ï¿½Îª0.01
+        if (Speed.I < 0) Speed.I = 0; // ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½
     }
+    tft180_show_string ( 0,  16*0, "3.Speed.I");
+    tft180_show_float(0, 16*2, Speed.I, 1, 6);
 }
 
 void Adjust_SpeedD(void) {
     if (KEY_SHORT_PRESS == key_get_state(KEY_1)) {
-        Speed.D += 0.05; // Ôö¼Ó²½³¤Îª0.05
+        Speed.D += 0.05; // ï¿½ï¿½ï¿½Ó²ï¿½ï¿½ï¿½Îª0.05
     }
     else if (KEY_SHORT_PRESS == key_get_state(KEY_2)) {
-        Speed.D -= 0.05; // ¼õÉÙ²½³¤Îª0.05
-        if (Speed.D < 0) Speed.D = 0; // ·ÀÖ¹ÏÂÒç
+        Speed.D -= 0.05; // ï¿½ï¿½ï¿½Ù²ï¿½ï¿½ï¿½Îª0.05
+        if (Speed.D < 0) Speed.D = 0; // ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½
     }
+    tft180_show_string ( 0,  16*0, "4.Speed.D");
+    tft180_show_float(0, 16*2, Speed.D, 1, 6);
 }
 
 void Adjust_TurnP(void) {
     if (KEY_SHORT_PRESS == key_get_state(KEY_1)) {
-        Turn.P += 0.1; // Ôö¼Ó²½³¤Îª0.1
+        Turn.P += 0.1; // ï¿½ï¿½ï¿½Ó²ï¿½ï¿½ï¿½Îª0.1
     }
     else if (KEY_SHORT_PRESS == key_get_state(KEY_2)) {
-        Turn.P -= 0.1; // ¼õÉÙ²½³¤Îª0.1
-        if (Turn.P < 0) Turn.P = 0; // ·ÀÖ¹ÏÂÒç
+        Turn.P -= 0.1; // ï¿½ï¿½ï¿½Ù²ï¿½ï¿½ï¿½Îª0.1
+        if (Turn.P < 0) Turn.P = 0; // ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½
     }
+    tft180_show_string ( 0,  16*0, "5.Turn_P");
+    tft180_show_float(0, 16*2, Turn.P, 1, 6);
 }
 
 void Adjust_TurnD(void) {
     if (KEY_SHORT_PRESS == key_get_state(KEY_1)) {
-        Turn.D += 0.1; // Ôö¼Ó²½³¤Îª0.1
+        Turn.D += 0.1; // ï¿½ï¿½ï¿½Ó²ï¿½ï¿½ï¿½Îª0.1
     }
     else if (KEY_SHORT_PRESS == key_get_state(KEY_2)) {
-        Turn.D -= 0.1; // ¼õÉÙ²½³¤Îª0.1
-        if (Turn.D < 0) Turn.D = 0; // ·ÀÖ¹ÏÂÒç
+        Turn.D -= 0.1; // ï¿½ï¿½ï¿½Ù²ï¿½ï¿½ï¿½Îª0.1
+        if (Turn.D < 0) Turn.D = 0; // ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½
     }
+    tft180_show_string ( 0,  16*0, "6.Turn_D");
+    tft180_show_float(0, 16*2, Turn.D, 1, 6);
+}
+
+void Adjust_max_angle(void) {
+    if (KEY_SHORT_PRESS == key_get_state(KEY_1)) {
+        max_angle += 10;
+    }
+    else if (KEY_SHORT_PRESS == key_get_state(KEY_2)) {
+        max_angle -= 10;
+        if (max_angle < 0) Turn.D = 0; // ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½
+    }
+    tft180_show_string ( 0,  16*0, "7.max_angle");
+    tft180_show_int(0, 16*2, max_angle, 4);
+}
+
+void Adjust_Set_Speed(void) {
+    if (KEY_SHORT_ PRESS == key_get_state(KEY_1)) {
+        Speed.Set_Speed += 500;
+    }
+    else if (KEY_SHORT_PRESS == key_get_state(KEY_2)) {
+        Speed.Set_Speed -= 500;
+        if (Speed.Set_Speed < 0) Speed.Set_Speed = 0; // ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½
+    }
+    //çŽ°åœ¨è¿˜æœ‰bugï¼šé»‘å±
+    tft180_show_string ( 0,  16*0, "8.Set_Speed");
+//    tft180_show_float(0, 16*2, Speed.Set_Speed, 1, 6);
 }
 
 
 /*
-//      * @brief    °´¼ü3£¬°´ÏÂËü¾Íµ÷ÓÃ* List_Number_p¶ÔÓ¦µÄº¯Êý
-//      * @param  ÎÞ
-//      * @retval ÎÞ
+//      * @brief    ï¿½ï¿½ï¿½ï¿½3ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½* List_Number_pï¿½ï¿½Ó¦ï¿½Äºï¿½ï¿½ï¿½
+//      * @param  ï¿½ï¿½
+//      * @retval ï¿½ï¿½
 */
 void Display_Second_Menu(uint8_t *List_Number_p){
-            if(*List_Number_p ==2)
+            if(*List_Number_p ==1)
             {
-                //ÏëÊµÏÖµÄ¹¦ÄÜ
+                //ï¿½ï¿½Êµï¿½ÖµÄ¹ï¿½ï¿½ï¿½
                 Display_Grayscale_Image();
 
-                // Çå¿ÕÍâ²¿ÖÐ¶Ï´¥·¢±êÖ¾Î»
+                // ï¿½ï¿½ï¿½ï¿½â²¿ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾Î»
 
 
             }
+            else if(*List_Number_p==2)
+            {
+                //ï¿½ï¿½Êµï¿½ÖµÄ¹ï¿½ï¿½ï¿½
+                Adjust_SpeedP();
+                // ï¿½ï¿½ï¿½ï¿½â²¿ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾Î»
+                exti_state[3] = 0;
+            }
             else if(*List_Number_p==3)
             {
-                //ÏëÊµÏÖµÄ¹¦ÄÜ
-                Adjust_SpeedP();
-                // Çå¿ÕÍâ²¿ÖÐ¶Ï´¥·¢±êÖ¾Î»
+                //ï¿½ï¿½Êµï¿½ÖµÄ¹ï¿½ï¿½ï¿½
+                Adjust_SpeedI();
+                // ï¿½ï¿½ï¿½ï¿½â²¿ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾Î»
                 exti_state[3] = 0;
             }
             else if(*List_Number_p==4)
             {
-                //ÏëÊµÏÖµÄ¹¦ÄÜ
-                Adjust_SpeedI();
-                // Çå¿ÕÍâ²¿ÖÐ¶Ï´¥·¢±êÖ¾Î»
+                //ï¿½ï¿½Êµï¿½ÖµÄ¹ï¿½ï¿½ï¿½
+                Adjust_SpeedD();
+                // ï¿½ï¿½ï¿½ï¿½â²¿ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾Î»
                 exti_state[3] = 0;
             }
             else if(*List_Number_p==5)
             {
-                //ÏëÊµÏÖµÄ¹¦ÄÜ
-                Adjust_SpeedD();
-                // Çå¿ÕÍâ²¿ÖÐ¶Ï´¥·¢±êÖ¾Î»
+                //ï¿½ï¿½Êµï¿½ÖµÄ¹ï¿½ï¿½ï¿½
+                Adjust_TurnP();
+                // ï¿½ï¿½ï¿½ï¿½â²¿ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾Î»
                 exti_state[3] = 0;
             }
             else if(*List_Number_p==6)
             {
-                //ÏëÊµÏÖµÄ¹¦ÄÜ
-                Adjust_TurnP();
-                // Çå¿ÕÍâ²¿ÖÐ¶Ï´¥·¢±êÖ¾Î»
+                //ï¿½ï¿½Êµï¿½ÖµÄ¹ï¿½ï¿½ï¿½
+                Adjust_TurnD();
+                // ï¿½ï¿½ï¿½ï¿½â²¿ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾Î»
                 exti_state[3] = 0;
             }
             else if(*List_Number_p==7)
             {
-                //ÏëÊµÏÖµÄ¹¦ÄÜ
-                Adjust_TurnD();
-                // Çå¿ÕÍâ²¿ÖÐ¶Ï´¥·¢±êÖ¾Î»
+                //ï¿½ï¿½Êµï¿½ÖµÄ¹ï¿½ï¿½ï¿½
+                Adjust_max_angle();
+                // ï¿½ï¿½ï¿½ï¿½â²¿ï¿½Ð¶Ï´ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾Î»
                 exti_state[3] = 0;
             }
-            //ÏûÒ»ÏÂkey3ÖÐ¶Ï×´Ì¬
+            //ï¿½ï¿½Ò»ï¿½ï¿½key3ï¿½Ð¶ï¿½×´Ì¬
             exti_state[2] = 0;
 }
 

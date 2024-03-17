@@ -65,7 +65,7 @@ int main (void)
     tft180_set_color(RGB565_RED, RGB565_BLACK);
     tft180_init();
 
-    uint8_t Menu_List=5;
+    uint8_t Menu_List=10;
     key_init (5);
     exti_initconfig ();
     while(1)
