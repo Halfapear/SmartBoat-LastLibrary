@@ -351,7 +351,7 @@ void TIM3_IRQHandler(void)
               }
               else
               {
-                  bl_duty=900;
+                  bl_duty=980;
               }
 
 

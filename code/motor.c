@@ -29,7 +29,7 @@ Turn_ct Turn;
 int16 bl_duty=0;
 
 int16 maxspeed=6000;
-int16 max_angle=1000;
+int16 max_angle=150;
 
 
 int16 zhuanjiaozhi=0;
@@ -68,12 +68,13 @@ void Para_init()
     Turn.PWM_Lout=0;
     Turn.PWM_Rout=0;
     Turn.PWM_Dout=0;
+    Turn.intergrator=0;
     Turn.error=0;
     Turn.last_error=0;
 
-    Turn.P=1.1;
-    Turn.I=0;
-    Turn.D=-5;
+    Turn.P=1.5;
+    Turn.I=0.5;
+    Turn.D=2;
 }
 //编码器速度获取与处理
 //测速轮直径-3.3cm
@@ -117,8 +118,14 @@ void TurnPD_Control()
     {
         Turn.error=0;
     }
-    Turn.PWM_Dout=Turn.P*Turn.error+Turn.D*(Turn.error-Turn.last_error);
+    Turn.intergrator+=Turn.error;
+    Turn.intergrator=constrain_float(Turn.intergrator,-40,40);
+    Turn.PWM_Dout=Turn.P*Turn.error+Turn.intergrator*Turn.I+Turn.D*(Turn.error-Turn.last_error);
     Turn.last_error = Turn.error;
+    if(Turn.PWM_Dout>100)
+        Turn.PWM_Dout=100;
+    else if(Turn.PWM_Dout<-100)
+        Turn.PWM_Dout=-100;
 
 
 }
