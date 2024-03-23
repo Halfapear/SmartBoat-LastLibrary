@@ -3,6 +3,7 @@
 #include "motor.h"
 #include "image.h"
 #include "camera.h"
+#include  "gyro.h"
 
 #define LED1                (E2 )
 uint8_t *List_Number_p;
@@ -123,11 +124,11 @@ void Display_Grayscale_Image(void)
 
     //tft180_show_gray_image(0,0,mt9v03x_image[0],image_w,image_h,160,128,0);
     tft180_show_gray_image(0,0,bin_image[0],image_w,image_h,160,128,0);
-    tft180_show_int(0,0,Speed.Speed_Car,4);
-                tft180_show_int(0,16,Speed.P_Error,5);
+    tft180_show_int(0,0,rd.state,4);
+                tft180_show_int(0,16,FJ_Angle,5);
 
-                tft180_show_int(0,16*2,Turn.PWM_Lout,5);
-                tft180_show_int(0,16*3,Turn.PWM_Rout,5);
+                tft180_show_int(0,16*2,rd.L_Edgepoint_y,5);
+                tft180_show_int(0,16*3,rd.R_Edgepoint_y,5);
     for (int16 i = 0; i <image_h-1; i++)
        {
         tft180_draw_point(94,i,RGB565_YELLOW);

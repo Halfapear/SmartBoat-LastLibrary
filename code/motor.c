@@ -42,7 +42,7 @@ void Para_init()
     bl_duty=880;//无刷电机调速
     PWM.Left_Out=0;
     PWM.Right_Out=0;
-    Speed.Set_Speed=5000;
+    Speed.Set_Speed=3500;
     //Speed.Speed_Max=4000;
 
     Speed.Speed_Now=0;
@@ -77,9 +77,9 @@ void Para_init()
 void GetSpeed()
 {
     encoder_data_quaddec = encoder_get_count(ENCODER_QUADDEC);                  // 获取编码器计数
-    Speed.Speed_Now=encoder_data_quaddec;
+    Speed.Speed_Now=encoder_data_quaddec*100;
     encoder_clear_count(ENCODER_QUADDEC);                                       // 清空编码器计数
-    Speed.Speed_Car=0.8*Speed.Speed_Now+0.2*Speed.Speed_Old;        //减小抖动
+    Speed.Speed_Car=0.9*Speed.Speed_Now+0.1*Speed.Speed_Old;        //减小抖动
     Speed.Speed_Old=Speed.Speed_Now;
 
 }
@@ -134,12 +134,12 @@ void PWM_Out()
     if(Turn.PWM_Lout>maxspeed)
         Turn.PWM_Lout=maxspeed;
     else if(Turn.PWM_Lout<-maxspeed)
-        Turn.PWM_Lout=maxspeed;
+        Turn.PWM_Lout=-maxspeed;
 
     if(Turn.PWM_Rout>maxspeed)
             Turn.PWM_Rout=maxspeed;
     else if(Turn.PWM_Rout<-maxspeed)
-            Turn.PWM_Rout=maxspeed;
+            Turn.PWM_Rout=-maxspeed;
 
     if(Turn.PWM_Lout>0)
     {

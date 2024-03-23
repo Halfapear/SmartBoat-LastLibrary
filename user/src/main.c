@@ -112,6 +112,8 @@ int main (void)
             //如果对图像进行补线，需要重*新*搜*线
             if(rd.Ring_Flag==0){//圆环搜索
                 Ring_Search();
+                if(rd.Ring_Flag!=0)
+                    rd.state=1;
             }
             else if(rd.Ring_Flag==1){//左环
                 Left_Ring();
