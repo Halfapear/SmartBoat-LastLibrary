@@ -368,7 +368,7 @@ void search_l_r(uint16 break_flag, uint8(*image)[image_w], uint16 *l_stastic, ui
         }
         if ((points_r[r_data_statics][1] < points_l[l_data_statics - 1][1]))
         {
-            printf("\n如果左边比右边高了，左边等待右边\n");
+            //printf("\ndengdai\n");
             continue;//如果左边比右边高了，左边等待右边
         }
         if (dir_l[l_data_statics - 1] == 7
@@ -594,9 +594,9 @@ data_stastics_l = 0;
 data_stastics_r = 0;
 if (get_start_point(image_h - 2))//找到起点了，再执行八领域，没找到就一直找
 {
-    printf("正在开始八领域\n");
+    //printf("start\n");
     search_l_r((uint16)USE_num, bin_image, &data_stastics_l, &data_stastics_r, start_point_l[0], start_point_l[1], start_point_r[0], start_point_r[1], &hightest);
-    printf("八邻域已结束\n");
+    //printf("end\n");
     // 从爬取的边界线内提取边线 ， 这个才是最终有用的边线
     get_left(data_stastics_l);
     get_right(data_stastics_r);

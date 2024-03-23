@@ -1,12 +1,13 @@
 #include "common.h"
 #include "image.h"
 #include "motor.h"
+#include "gyro.h"
 
 //宏定义
 #define image_h 120//图像高度
 #define image_w 188//图像宽度
-#define border_max  image_w-2 //边界最大值
-#define border_min  1   //边界最小值
+#define rd_border_max  image_w-3 //边界最大值
+#define rd_border_min  2   //边界最小值
 
 typedef struct
 {

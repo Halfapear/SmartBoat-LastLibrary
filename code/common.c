@@ -3,6 +3,7 @@
 #include "motor.h"
 #include "servo.h"
 #include "camera.h"
+#include "gyro.h"
 
 #define LED1_PIN E2
 #define BEEP                (C13)
@@ -69,7 +70,9 @@ void All_Init()
     //编码器初始化
     encoder_quad_init(ENCODER_QUADDEC, ENCODER_QUADDEC_A, ENCODER_QUADDEC_B);
 
-
+    //陀螺仪初始化
+    imu660ra_init();
+    Zero_Point_Detect();
 
     mt9v03x_init();
     Para_init();
