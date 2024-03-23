@@ -1,7 +1,8 @@
 #include "camera.h"
 
+
 Round rd;
-#define Search_Stop_Line 50
+#define Search_Stop_Line 40
 
 int Left_Lost_Flag[MT9V03X_H] ; //左丢线数组，丢线置1，没丢线置0
 
@@ -16,11 +17,14 @@ const uint8 Weight[MT9V03X_H]=
 {
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端00 ——09 行权重
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端10 ——19 行权重
-        1, 1, 1, 1, 1, 1, 1, 3, 4, 5,              //图像最远端20 ——29 行权重
+        1, 1, 1, 1, 1, 1, 1, 3, 4, 5,          //图像最远端20 ——29 行权重
         6, 7, 9,11,13,15,17,19,20,20,              //图像最远端30 ——39 行权重
-       19,17,15,13,11, 9, 7, 5, 3, 1,              //图像最远端40 ——49 行权重
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端50 ——59 行权重
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端60 ——69 行权重
+        19,17,15,13,11, 9, 7, 5, 3, 1,          //图像最远端40 ——49 行权重
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,               //图像最远端50 ——59 行权重
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,               //图像最远端60 ——69 行权重
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,                //70-79
+
+
 };
 float Err_Sum(void)
 {
@@ -83,12 +87,12 @@ void GetLostTime()
     uint16 r_lost=0;
     for(i=MT9V03X_H-2;i>10;i--)//从下往上
     {
-        if(l_border[i]==border_min)
+        if(l_border[i]<=rd_border_min)
         {
             Left_Lost_Flag[i]=1;
             l_lost++;
         }
-        else if(r_border[i]==border_max)
+        else if(r_border[i]>=rd_border_max)
         {
             Right_Lost_Flag[i]=1;
             r_lost++;
@@ -105,7 +109,6 @@ int Ring_Start_Test()
     if(rd.Left_Lost_Time>rd.Right_Lost_Time&&
         abs(rd.Left_Lost_Time-rd.Right_Lost_Time)>20&&
         (rd.Left_Lost_Time+rd.Right_Lost_Time)<190&&
-        rd.L_Edgepoint_y>114&&rd.R_Edgepoint_y>114&&
         Continuity_Change_Right(119,51)==0&&Continuity_Change_Left(119,51)!=0&&
         Monotonicity_Change_Left(80,20)!=0&&Monotonicity_Change_Right(80,20)==0&&
         Find_Left_Down_Point(115,60)
@@ -116,7 +119,6 @@ int Ring_Start_Test()
     else if(rd.Left_Lost_Time<rd.Right_Lost_Time&&
             abs(rd.Left_Lost_Time-rd.Right_Lost_Time)>25&&
             (rd.Left_Lost_Time+rd.Right_Lost_Time)<190&&
-            rd.L_Edgepoint_y>114&&rd.R_Edgepoint_y>114&&
             Continuity_Change_Right(119,51)!=0&&Continuity_Change_Left(119,51)==0&&
             Monotonicity_Change_Left(80,20)==0&&Monotonicity_Change_Right(80,20)!=0&&
             Find_Right_Down_Point(115,60)
@@ -136,12 +138,12 @@ void Get_Edge_Point()
     uint8 r_flag=0;
     for(i=MT9V03X_H-1;i>10;i--)//从下往上
     {
-        if (l_border[i]!=border_min&&l_flag==0) {
+        if (l_border[i]>3&&l_flag==0) {
            l_flag=1;
            rd.L_Edgepoint_x=l_border[i];
            rd.L_Edgepoint_y=i;
         }
-        if (r_border[i]!=border_max&&r_flag==0) {
+        if (r_border[i]<184&&r_flag==0) {
                    r_flag=1;
                    rd.R_Edgepoint_x=r_border[i];
                    rd.R_Edgepoint_y=i;
@@ -179,7 +181,7 @@ void Ring_Search()
 //左环状态机
 void Left_Ring()
 {
-    rd.state=1;
+    //rd.state=1;
     float k=0;
     if(rd.state==1)
             {
@@ -198,7 +200,7 @@ void Left_Ring()
                 Left_Add_Line((int)(monotonicity_change_line[1]*0.1),MT9V03X_H-1,monotonicity_change_line[1],monotonicity_change_line[0]);
                 if(rd.state==2&&(rd.L_Edgepoint_y>=MT9V03X_H-5||monotonicity_change_line[0]>50))//当圆弧靠下时候，进3
                 {
-                    rd.state=0;//最长白列寻找范围也要改，见camera.c
+                    rd.state=3;//最长白列寻找范围也要改，见camera.c
                     //Left_Island_Flag=0;
                 }
             }
@@ -213,12 +215,12 @@ void Left_Ring()
                 {
                     Left_Up_Guai[0]=Find_Left_Up_Point(40,5);//找左上拐点
                     Left_Up_Guai[1]=l_border[Left_Up_Guai[0]];
-                    if (Left_Up_Guai[0]<5)//这里改过啊!!!!
+                    /*if (Left_Up_Guai[0]<5)//这里改过啊!!!!
                     {
                         rd.state=0;
                         rd.Ring_Flag=0;
-                    }
-                    if(k==0&&(15<=Left_Up_Guai[0]&&Left_Up_Guai[0]<50)&&(50<Left_Up_Guai[1]&&Left_Up_Guai[1]<110))//拐点出现在一定范围内，认为是拐点出现
+                    }*/
+                    if(k==0&&(15<=Left_Up_Guai[0]&&Left_Up_Guai[0]<50)&&(50<Left_Up_Guai[1]&&Left_Up_Guai[1]<110)&&Left_Up_Guai[0]>5)//拐点出现在一定范围内，认为是拐点出现
                     {
                         island_state_3_up[0]= Left_Up_Guai[0];
                         island_state_3_up[1]= Left_Up_Guai[1];
@@ -227,7 +229,7 @@ void Left_Ring()
                         image_process();//刷新边界数据
                     }
                 }
-                if((rd.state==3)&&(encoder_derdate>=2000))//暂时使用编码器计数来转换状态，后续考虑换陀螺仪
+                if((rd.state==3)&&(abs(FJ_Angle)>=60))//暂时使用编码器计数来转换状态，后续考虑换陀螺仪
                 {
                           k=0;//斜率清零
                           encoder_derdate=0;
@@ -236,8 +238,9 @@ void Left_Ring()
                 }
             }
     else if(rd.state==4)//状态4已经在里面
-            {
-
+     {
+        if(abs(FJ_Angle)>200)//积分200度以后在打开出环判断
+        {
                     monotonicity_change_line[0]=Monotonicity_Change_Right(MT9V03X_H-10,10);//单调性改变
                     monotonicity_change_line[1]=r_border[monotonicity_change_line[0]];
                     if((rd.state==4)&&(35<=monotonicity_change_line[0]&&monotonicity_change_line[0]<=55&&monotonicity_change_line[1]>=10))//单调点靠下，进去5
@@ -248,8 +251,8 @@ void Left_Ring()
                         K_Add_Boundry_Right(k,island_state_5_down[1],island_state_5_down[0],0);//和状态3一样，记住斜率
                         rd.state=5;
                     }
-
-            }
+         }
+     }
             else if(rd.state==5)//出环
             {
                 K_Add_Boundry_Right(k,island_state_5_down[1],island_state_5_down[0],0);
@@ -303,7 +306,7 @@ void Left_Ring()
 //右环状态机
 void Right_Ring()
 {
-    rd.state=1;
+    //rd.state=1;
     float k=0;
     if(rd.state==1)
     {
@@ -338,14 +341,14 @@ void Right_Ring()
              }
              else//还在找点
              {
-                 Right_Up_Guai[0]=Find_Right_Up_Point(40,10);//找右上拐点
+                 Right_Up_Guai[0]=Find_Right_Up_Point(40,5);//找右上拐点
                  Right_Up_Guai[1]=r_border[Right_Up_Guai[0]];
-                 if(Right_Up_Guai[0]<10)//角点位置不对，退出环岛
+                 /*if(Right_Up_Guai[0]<10)//角点位置不对，退出环岛
                  {
                      rd.state=0;
                      rd.Ring_Flag=0;
-                 }
-                 if(k==0&&(15<=Right_Up_Guai[0]&&Right_Up_Guai[0]<50)&&(70<Right_Up_Guai[1]&&Right_Up_Guai[1]<150))
+                 }*/
+                 if(k==0&&(15<=Right_Up_Guai[0]&&Right_Up_Guai[0]<50)&&(70<Right_Up_Guai[1]&&Right_Up_Guai[1]<150)&&Right_Up_Guai[0]>5)
                  {//当角点出现在给定范围内
                      //island_state_3_up[0]= Right_Up_Guai[0];
                      //island_state_3_up[1]= Right_Up_Guai[1];
@@ -353,8 +356,8 @@ void Right_Ring()
                      K_Draw_Line(k,30,MT9V03X_H-1,0);
                      image_process();//刷新赛道数据
                  }
-             }
-             if((rd.state==3)&&(encoder_derdate>=2000))//暂时使用编码器计数来转换状态，后续考虑换陀螺仪
+             }//3状态秒跳4，编码器得长点，或者上陀螺仪，后面也跳的很快
+             if((rd.state==3)&&(abs(FJ_Angle)>=60))//暂时使用编码器计数来转换状态，后续考虑换陀螺仪
              {
                  k=0;//斜率清零
                  encoder_derdate=0;
@@ -364,16 +367,19 @@ void Right_Ring()
          }
     else if(rd.state==4)//环内状态，无特殊处理
     {
-        monotonicity_change_line[0]=Monotonicity_Change_Left(90,10);//单调性改变
-        monotonicity_change_line[1]=l_border[monotonicity_change_line[0]];
-        if(rd.state==4&&Continuity_Change_Left(110,40)!=0)//有陀螺仪后添加陀螺仪判据，积分满220以上
+        if(abs(FJ_Angle)>200)//积分200度以后在打开出环判断
         {
-            island_state_5_down[0]=MT9V03X_H-1;
-            island_state_5_down[1]=l_border[MT9V03X_H-1]-5;
-            if(k==0)
-                k=(float)((float)(MT9V03X_H-monotonicity_change_line[0])/(float)(island_state_5_down[1]-monotonicity_change_line[1]));
-            K_Add_Boundry_Left(k,island_state_5_down[1],island_state_5_down[0],0);  //总感觉这个补线会出问题，有空再看看
-            rd.state=5;
+            monotonicity_change_line[0]=Monotonicity_Change_Left(90,10);//单调性改变
+            monotonicity_change_line[1]=l_border[monotonicity_change_line[0]];
+            if(rd.state==4&&Continuity_Change_Left(110,40)!=0)//有陀螺仪后添加陀螺仪判据，积分满220以上
+            {
+                island_state_5_down[0]=MT9V03X_H-1;
+                island_state_5_down[1]=l_border[MT9V03X_H-1]-5;
+                if(k==0)
+                    k=(float)((float)(MT9V03X_H-monotonicity_change_line[0])/(float)(island_state_5_down[1]-monotonicity_change_line[1]));
+                K_Add_Boundry_Left(k,island_state_5_down[1],island_state_5_down[0],0);  //总感觉这个补线会出问题，有空再看看
+                rd.state=5;
+            }
         }
     }
     else if(rd.state==5)//准备出环岛

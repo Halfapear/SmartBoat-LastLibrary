@@ -3,6 +3,7 @@
 #include "motor.h"
 #include "image.h"
 #include "camera.h"
+#include  "gyro.h"
 
 #define LED1                (E2 )
 uint8_t *List_Number_p;
@@ -123,8 +124,8 @@ void Display_Grayscale_Image(void)
 
     //tft180_show_gray_image(0,0,mt9v03x_image[0],image_w,image_h,160,128,0);
     tft180_show_gray_image(0,0,bin_image[0],image_w,image_h,160,128,0);
-    tft180_show_int(0,0,Speed.Speed_Car,4);
-                tft180_show_int(0,16,Speed.P_Error,5);
+    tft180_show_int(0,0,Turn.Chazhi,4);
+                tft180_show_int(0,16,Turn.PWM_Dout,5);
 
                 tft180_show_int(0,16*2,Turn.PWM_Lout,5);
                 tft180_show_int(0,16*3,Turn.PWM_Rout,5);
@@ -260,7 +261,7 @@ void Adjust_max_angle(void) {
 }
 
 void Adjust_Set_Speed(void) {
-    if (KEY_SHORT_ PRESS == key_get_state(KEY_1)) {
+    if (KEY_SHORT_PRESS == key_get_state(KEY_1)) {
         Speed.Set_Speed += 500;
     }
     else if (KEY_SHORT_PRESS == key_get_state(KEY_2)) {

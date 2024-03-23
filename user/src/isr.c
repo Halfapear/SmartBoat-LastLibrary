@@ -351,18 +351,32 @@ void TIM3_IRQHandler(void)
               }
               else
               {
-                  bl_duty=900;
+                  bl_duty=980;
               }
 
 
               if(ms%10==0)
               {
                   set_brushless_duty(bl_duty);//无刷调速，改全局变量bl_duty即可
+                  //Gyroscope_GetData();
+                  Gyroscope_GetData();
+                  if(rd.state!=0)//进环岛就积分
+                          {
+                              Get_Gyroscope_Angle();
+                               if(rd.state==9)//进9状态必须清除积分
+                               {
+                                   Clear_Gyroscope_Angle();
+                               }
+                          }
+                          else//其他情况不积分
+                          {
+                              Clear_Gyroscope_Angle();
+                          }
               }
               if(ms%4==0)
               {
-                  //Speed.Output_PWM=4000;
-                  SpeedPID_Control();
+                  Speed.Output_PWM=3000;
+                  //SpeedPID_Control();
               }
               if(ms%2==0)
               {

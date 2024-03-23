@@ -29,7 +29,7 @@ Turn_ct Turn;
 int16 bl_duty=0;
 
 int16 maxspeed=6000;
-int16 max_angle=60;
+int16 max_angle=150;
 
 
 int16 zhuanjiaozhi=0;
@@ -42,7 +42,7 @@ void Para_init()
     bl_duty=880;//无刷电机调速
     PWM.Left_Out=0;
     PWM.Right_Out=0;
-    Speed.Set_Speed=5000;
+    Speed.Set_Speed=3500;
     //Speed.Speed_Max=4000;
 
     Speed.Speed_Now=0;
@@ -67,19 +67,23 @@ void Para_init()
 
     Turn.PWM_Lout=0;
     Turn.PWM_Rout=0;
+    Turn.PWM_Dout=0;
+    Turn.intergrator=0;
+    Turn.error=0;
+    Turn.last_error=0;
 
-    Turn.P=1.1;
-    Turn.I=0;
-    Turn.D=-5;
+    Turn.P=1.5;
+    Turn.I=0.5;
+    Turn.D=2;
 }
 //编码器速度获取与处理
 //测速轮直径-3.3cm
 void GetSpeed()
 {
     encoder_data_quaddec = encoder_get_count(ENCODER_QUADDEC);                  // 获取编码器计数
-    Speed.Speed_Now=encoder_data_quaddec;
+    Speed.Speed_Now=encoder_data_quaddec*100;
     encoder_clear_count(ENCODER_QUADDEC);                                       // 清空编码器计数
-    Speed.Speed_Car=0.8*Speed.Speed_Now+0.2*Speed.Speed_Old;        //减小抖动
+    Speed.Speed_Car=0.9*Speed.Speed_Now+0.1*Speed.Speed_Old;        //减小抖动
     Speed.Speed_Old=Speed.Speed_Now;
 
 }
@@ -114,8 +118,14 @@ void TurnPD_Control()
     {
         Turn.error=0;
     }
-    Turn.PWM_Dout=Turn.P*Turn.error+Turn.D*(Turn.error-Turn.last_error);
+    Turn.intergrator+=Turn.error;
+    Turn.intergrator=constrain_float(Turn.intergrator,-40,40);
+    Turn.PWM_Dout=Turn.P*Turn.error+Turn.intergrator*Turn.I+Turn.D*(Turn.error-Turn.last_error);
     Turn.last_error = Turn.error;
+    if(Turn.PWM_Dout>100)
+        Turn.PWM_Dout=100;
+    else if(Turn.PWM_Dout<-100)
+        Turn.PWM_Dout=-100;
 
 
 }
@@ -125,6 +135,7 @@ void set_brushless_duty(int16 duty)
     pwm_set_duty(PWM_D1, duty);
     pwm_set_duty(PWM_D2, duty);
 }
+/*
 void PWM_Out()
 {
     //速度环输出
@@ -134,12 +145,60 @@ void PWM_Out()
     if(Turn.PWM_Lout>maxspeed)
         Turn.PWM_Lout=maxspeed;
     else if(Turn.PWM_Lout<-maxspeed)
-        Turn.PWM_Lout=maxspeed;
+        Turn.PWM_Lout=-maxspeed;
 
     if(Turn.PWM_Rout>maxspeed)
             Turn.PWM_Rout=maxspeed;
     else if(Turn.PWM_Rout<-maxspeed)
+            Turn.PWM_Rout=-maxspeed;
+
+    if(Turn.PWM_Lout>0)
+    {
+        gpio_set_level(DIR_L2, GPIO_LOW);
+        pwm_set_duty(PWM_L2,Turn.PWM_Lout);
+        gpio_set_level(DIR_R1, GPIO_LOW);
+        pwm_set_duty(PWM_R1,Turn.PWM_Lout*0.4);
+
+    }
+    else {
+        gpio_set_level(DIR_L2, GPIO_HIGH);
+        pwm_set_duty(PWM_L2,-Turn.PWM_Lout);
+        gpio_set_level(DIR_R1, GPIO_HIGH);
+        pwm_set_duty(PWM_R1,Turn.PWM_Lout*0.4);
+    }
+
+    if(Turn.PWM_Rout>0)
+        {
+            gpio_set_level(DIR_R2, GPIO_LOW);
+            pwm_set_duty(PWM_R2,Turn.PWM_Rout);
+            gpio_set_level(DIR_L1, GPIO_LOW);
+            pwm_set_duty(PWM_L1,Turn.PWM_Rout);
+        }
+        else {
+            gpio_set_level(DIR_R2, GPIO_HIGH);
+            pwm_set_duty(PWM_R2,-Turn.PWM_Rout);
+            gpio_set_level(DIR_L1, GPIO_HIGH);
+            pwm_set_duty(PWM_L1,Turn.PWM_Rout);
+        }
+
+
+}*/
+
+void PWM_Out()
+{
+    //速度环输出
+    Turn.PWM_Lout=Speed.Output_PWM*(1-Turn.PWM_Dout/max_angle);
+    Turn.PWM_Rout=Speed.Output_PWM*(1+Turn.PWM_Dout/max_angle);
+
+    if(Turn.PWM_Lout>maxspeed)
+        Turn.PWM_Lout=maxspeed;
+    else if(Turn.PWM_Lout<-maxspeed)
+        Turn.PWM_Lout=-maxspeed;
+
+    if(Turn.PWM_Rout>maxspeed)
             Turn.PWM_Rout=maxspeed;
+    else if(Turn.PWM_Rout<-maxspeed)
+            Turn.PWM_Rout=-maxspeed;
 
     if(Turn.PWM_Lout>0)
     {
@@ -164,7 +223,6 @@ void PWM_Out()
 
 
 }
-
 void stop(){
     Speed.Set_Speed = 0;
 }
