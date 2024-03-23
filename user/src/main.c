@@ -73,7 +73,7 @@ int main (void)
         // 此处编写需要循环执行的代码
         key_scanner();
 
-        set_brushless_duty(bl_duty);
+        //set_brushless_duty(bl_duty);
 
         if(garageout_flag == 0){
                if(in_second_menu == 0){

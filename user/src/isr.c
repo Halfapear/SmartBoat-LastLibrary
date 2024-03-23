@@ -380,7 +380,7 @@ void TIM3_IRQHandler(void)
               }
               if(ms%2==0)
               {
-                  //TurnPD_Control();
+                  TurnPD_Control();
                   PWM_Out();
               }
 

@@ -29,7 +29,7 @@ Turn_ct Turn;
 int16 bl_duty=0;
 
 int16 maxspeed=6000;
-int16 max_angle=60;
+int16 max_angle=1000;
 
 
 int16 zhuanjiaozhi=0;
@@ -67,6 +67,9 @@ void Para_init()
 
     Turn.PWM_Lout=0;
     Turn.PWM_Rout=0;
+    Turn.PWM_Dout=0;
+    Turn.error=0;
+    Turn.last_error=0;
 
     Turn.P=1.1;
     Turn.I=0;
@@ -125,6 +128,55 @@ void set_brushless_duty(int16 duty)
     pwm_set_duty(PWM_D1, duty);
     pwm_set_duty(PWM_D2, duty);
 }
+/*
+void PWM_Out()
+{
+    //速度环输出
+    Turn.PWM_Lout=Speed.Output_PWM*(1-Turn.PWM_Dout/max_angle);
+    Turn.PWM_Rout=Speed.Output_PWM*(1+Turn.PWM_Dout/max_angle);
+
+    if(Turn.PWM_Lout>maxspeed)
+        Turn.PWM_Lout=maxspeed;
+    else if(Turn.PWM_Lout<-maxspeed)
+        Turn.PWM_Lout=-maxspeed;
+
+    if(Turn.PWM_Rout>maxspeed)
+            Turn.PWM_Rout=maxspeed;
+    else if(Turn.PWM_Rout<-maxspeed)
+            Turn.PWM_Rout=-maxspeed;
+
+    if(Turn.PWM_Lout>0)
+    {
+        gpio_set_level(DIR_L2, GPIO_LOW);
+        pwm_set_duty(PWM_L2,Turn.PWM_Lout);
+        gpio_set_level(DIR_R1, GPIO_LOW);
+        pwm_set_duty(PWM_R1,Turn.PWM_Lout*0.4);
+
+    }
+    else {
+        gpio_set_level(DIR_L2, GPIO_HIGH);
+        pwm_set_duty(PWM_L2,-Turn.PWM_Lout);
+        gpio_set_level(DIR_R1, GPIO_HIGH);
+        pwm_set_duty(PWM_R1,Turn.PWM_Lout*0.4);
+    }
+
+    if(Turn.PWM_Rout>0)
+        {
+            gpio_set_level(DIR_R2, GPIO_LOW);
+            pwm_set_duty(PWM_R2,Turn.PWM_Rout);
+            gpio_set_level(DIR_L1, GPIO_LOW);
+            pwm_set_duty(PWM_L1,Turn.PWM_Rout);
+        }
+        else {
+            gpio_set_level(DIR_R2, GPIO_HIGH);
+            pwm_set_duty(PWM_R2,-Turn.PWM_Rout);
+            gpio_set_level(DIR_L1, GPIO_HIGH);
+            pwm_set_duty(PWM_L1,Turn.PWM_Rout);
+        }
+
+
+}*/
+
 void PWM_Out()
 {
     //速度环输出
@@ -164,7 +216,6 @@ void PWM_Out()
 
 
 }
-
 void stop(){
     Speed.Set_Speed = 0;
 }
