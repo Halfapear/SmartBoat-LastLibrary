@@ -45,11 +45,15 @@
 #define PIT_CH                  (TIM3_PIT)                                      // 使用的周期中断编号 如果修改 需要同步对应修改周期中断编号与 isr.c 中的调用
 #define PIT_PRIORITY            (TIM3_IRQn)                                      // 对应周期中断的中断编号
 uint8 count = 0;
+
 int main (void)
 {
     clock_init(SYSTEM_CLOCK_120M);      // 初始化芯片时钟 工作频率为 120MHz
     debug_init();                       // 务必保留，本函数用于初始化MPU 时钟 调试串口
-
+   /* wireless_uart_init();
+    wireless_uart_send_byte('\r');
+    wireless_uart_send_byte('\n');
+    wireless_uart_send_string("start.\r\n");  */            // 初始化正常 输出测试信息
     // 此处编写用户代码 例如外设初始化代码等
     All_Init();
     pit_ms_init(PIT_CH, 1);                                                  // 初始化 PIT_CH0 为周期中断 1ms 周期
@@ -60,21 +64,25 @@ int main (void)
     uint8_t List_Number=1;
     //    * List_Number_p=&List_Number;
     List_Number_p=&List_Number;
-
+#if 1
     tft180_set_dir(TFT180_CROSSWISE);
     tft180_set_color(RGB565_RED, RGB565_BLACK);
     tft180_init();
-
+#endif
     uint8_t Menu_List=10;
     key_init (5);
     exti_initconfig ();
+
+    //uint8 TP[20];
+    //uint8 TI[20];
+    //uint8 TD[20];
     while(1)
     {
         // 此处编写需要循环执行的代码
         key_scanner();
 
         //set_brushless_duty(bl_duty);
-
+#if 1
         if(garageout_flag == 0){
                if(in_second_menu == 0){
                         tft180_show_uint (0,16*7,List_Number ,9);
@@ -98,34 +106,55 @@ int main (void)
                 else {
                     stop();
                 }
+#endif
         key_clear_all_state();
 
         if(mt9v03x_finish_flag==1)
         {
+            turn_to_bin();
             mt9v03x_finish_flag=0;
-            image_process();
-
-            GetLostTime();//获取一些辅助标志位
-            Get_Edge_Point();
-            //ring标志变化处，因为判断要用到左右边界
-            //如果是补边线的话，直接补顺序进行即可
-            //如果对图像进行补线，需要重*新*搜*线
-           /* if(rd.Ring_Flag==0){//圆环搜索
-                Ring_Search();
-                if(rd.Ring_Flag!=0)
-                    rd.state=1;
-            }
-            else if(rd.Ring_Flag==1){//左环
-                Left_Ring();
-            }
-            else if(rd.Ring_Flag==2){//右环
-                Right_Ring();//写完了，但感觉跑不起来
-            }*/
-
-            GetCenterline();
-            Turn.Chazhi=Err_Sum();
 
         }
+        image_process();
+
+        GetLostTime();//获取一些辅助标志位
+        Get_Edge_Point();
+         //ring标志变化处，因为判断要用到左右边界
+         //如果是补边线的话，直接补顺序进行即可
+         //如果对图像进行补线，需要重*新*搜*线
+         if(rd.Ring_Flag==0&&Cross_Flag==0){//圆环搜索
+               Ring_Search();
+              if(rd.Ring_Flag!=0)
+                 rd.state=1;
+           }
+           else if(rd.Ring_Flag==1){//左环
+               Left_Ring();
+            }
+            else if(rd.Ring_Flag==2){//右环
+                  Right_Ring();//写完了，但感觉跑不起来
+            }
+
+         Cross_Detect();
+         GetCenterline();
+         Turn.Chazhi=Err_Sum();
+
+#if 0
+        func_float_to_str(TP,Turn.turnP,2);
+        func_float_to_str(TD,Turn.turnD,2);
+        func_float_to_str(TI,Turn.turnI,2);
+        wireless_uart_send_string("\r\nTurnP:");
+        wireless_uart_send_string(TP);
+        wireless_uart_send_byte('\r');
+        wireless_uart_send_byte('\n');
+        wireless_uart_send_string("\r\nTurnI:");
+        wireless_uart_send_string(TI);
+        wireless_uart_send_byte('\r');
+        wireless_uart_send_byte('\n');
+        wireless_uart_send_string("\r\nTurnD:");
+        wireless_uart_send_string(TI);
+        wireless_uart_send_byte('\r');
+        wireless_uart_send_byte('\n');
+#endif
 
 
         // 此处编写需要循环执行的代码

@@ -29,7 +29,7 @@ Turn_ct Turn;
 int16 bl_duty=0;
 
 int16 maxspeed=6000;
-int16 max_angle=150;
+int16 max_angle=200;
 
 
 int16 zhuanjiaozhi=0;
@@ -42,7 +42,7 @@ void Para_init()
     bl_duty=880;//无刷电机调速
     PWM.Left_Out=0;
     PWM.Right_Out=0;
-    Speed.Set_Speed=3500;
+    Speed.Set_Speed=3000;
     //Speed.Speed_Max=4000;
 
     Speed.Speed_Now=0;
@@ -56,7 +56,7 @@ void Para_init()
     Speed.L_Error=0;
     Speed.derivative=0;
 
-    Speed.P=1.1;
+    Speed.P=1.2;
     Speed.I=0.2;
     Speed.D=1;
 
@@ -72,16 +72,20 @@ void Para_init()
     Turn.error=0;
     Turn.last_error=0;
 
-    Turn.P=1.5;
-    Turn.I=0.5;
-    Turn.D=2;
+    Turn.turnP=0;
+    Turn.turnI=0;
+    Turn.turnD=0;
+
+    Turn.P=1.3;
+    Turn.I=1;
+    Turn.D=5;
 }
 //编码器速度获取与处理
 //测速轮直径-3.3cm
 void GetSpeed()
 {
     encoder_data_quaddec = encoder_get_count(ENCODER_QUADDEC);                  // 获取编码器计数
-    Speed.Speed_Now=encoder_data_quaddec*100;
+    Speed.Speed_Now=encoder_data_quaddec*40;
     encoder_clear_count(ENCODER_QUADDEC);                                       // 清空编码器计数
     Speed.Speed_Car=0.9*Speed.Speed_Now+0.1*Speed.Speed_Old;        //减小抖动
     Speed.Speed_Old=Speed.Speed_Now;
@@ -103,10 +107,10 @@ void SpeedPID_Control()
     Speed.D_Error=Speed.Error-Speed.L_Error;                            //微分环节
 
     Speed.Output_PWM=Speed.P*Speed.P_Error+Speed.I*Speed.I_Error+Speed.D*Speed.D_Error;
-    if(Speed.Output_PWM>4000)
-        Speed.Output_PWM=4000;
-    else if(Speed.Output_PWM<-4000)
-        Speed.Output_PWM=-4000;
+    if(Speed.Output_PWM>3500)
+        Speed.Output_PWM=3500;
+    else if(Speed.Output_PWM<-3500)
+        Speed.Output_PWM=-3500;
 
 }
 //转向环pd
@@ -120,6 +124,9 @@ void TurnPD_Control()
     }
     Turn.intergrator+=Turn.error;
     Turn.intergrator=constrain_float(Turn.intergrator,-40,40);
+    Turn.turnP=Turn.P*Turn.error;
+    Turn.turnD=Turn.D*(Turn.error-Turn.last_error);
+    Turn.turnI=Turn.intergrator*Turn.I;
     Turn.PWM_Dout=Turn.P*Turn.error+Turn.intergrator*Turn.I+Turn.D*(Turn.error-Turn.last_error);
     Turn.last_error = Turn.error;
     if(Turn.PWM_Dout>100)
@@ -188,7 +195,7 @@ void PWM_Out()
 {
     //速度环输出
     Turn.PWM_Lout=Speed.Output_PWM*(1-Turn.PWM_Dout/max_angle);
-    Turn.PWM_Rout=Speed.Output_PWM*(1+Turn.PWM_Dout/max_angle);
+    Turn.PWM_Rout=Speed.Output_PWM*(1+Turn.PWM_Dout/max_angle)+900;
 
     if(Turn.PWM_Lout>maxspeed)
         Turn.PWM_Lout=maxspeed;

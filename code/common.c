@@ -38,6 +38,7 @@ int32 s=0;
 int16 b_s;
 int16 encoder_data_quaddec = 0;
 int16 encoder_derdate=0;
+
 void All_Init()
 {
     system_delay_ms(50);//œµÕ≥—” ±

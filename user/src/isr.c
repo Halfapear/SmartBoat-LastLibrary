@@ -375,8 +375,8 @@ void TIM3_IRQHandler(void)
               }
               if(ms%4==0)
               {
-                  Speed.Output_PWM=3000;
-                  //SpeedPID_Control();
+                  //Speed.Output_PWM=2100;
+                  SpeedPID_Control();
               }
               if(ms%2==0)
               {
