@@ -24,7 +24,13 @@ typedef struct
     uint16 No_Ring_Flag;//圆环误判计数
     uint8 L_Edgepoint_x,L_Edgepoint_y,R_Edgepoint_x,R_Edgepoint_y;
     uint16 Ring_Leave_time;
+    uint16 Both_Lost_Time;//两边同时丢线数
+    float add_k;
+    uint16 right_up_guai;//右上拐点行数
 }Round;
+
+
+extern uint8 Cross_Flag;
 
 extern Round rd;
 extern uint8_t Pixle[35][100]; // 假设这是你的像素数组的大小
@@ -43,6 +49,7 @@ void Ring_Search();
 void Right_Ring();
 void Left_Ring();
 int Ring_Start_Test();//圆环开始的标志判断
+void Cross_Detect();//十字补线
 //以下为标志位判断函数
 int Find_Right_Down_Point(int start,int end);
 int Find_Right_Up_Point(int start,int end);

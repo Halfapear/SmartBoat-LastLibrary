@@ -3,6 +3,12 @@
 
 Round rd;
 #define Search_Stop_Line 40
+//十字
+uint8 Cross_Flag=0;
+volatile int Left_Down_Find=0; //十字使用，找到被置行数，没找到就是0
+volatile int Left_Up_Find=0;   //四个拐点标志
+volatile int Right_Down_Find=0;
+volatile int Right_Up_Find=0;
 
 int Left_Lost_Flag[MT9V03X_H] ; //左丢线数组，丢线置1，没丢线置0
 
@@ -60,6 +66,10 @@ void Round_init()
     rd.R_Edgepoint_x=0;
     rd.R_Edgepoint_y=0;
     rd.Ring_Leave_time=0;
+    rd.Both_Lost_Time=0;
+    rd.add_k=0;
+    rd.right_up_guai=0;
+
 
     monotonicity_change_line[0]=0;
     monotonicity_change_line[1]=0;
@@ -85,21 +95,31 @@ void GetLostTime()
     uint16 i;
     uint16 l_lost=0;
     uint16 r_lost=0;
+    uint16 both_lost=0;
+    uint16 both_lost_time=0;
     for(i=MT9V03X_H-2;i>10;i--)//从下往上
     {
+        both_lost=0;
         if(l_border[i]<=rd_border_min)
         {
             Left_Lost_Flag[i]=1;
             l_lost++;
+            both_lost++;
         }
         else if(r_border[i]>=rd_border_max)
         {
             Right_Lost_Flag[i]=1;
             r_lost++;
+            both_lost++;
+        }
+        if(both_lost==2)
+        {
+            both_lost_time++;
         }
     }
     rd.Left_Lost_Time=l_lost;
     rd.Right_Lost_Time=r_lost;
+    rd.Both_Lost_Time=both_lost_time;
 }
 
 //圆环状态判断，即1状态判断
@@ -109,9 +129,9 @@ int Ring_Start_Test()
     if(rd.Left_Lost_Time>rd.Right_Lost_Time&&
         abs(rd.Left_Lost_Time-rd.Right_Lost_Time)>20&&
         (rd.Left_Lost_Time+rd.Right_Lost_Time)<190&&
-        Continuity_Change_Right(119,51)==0&&Continuity_Change_Left(119,51)!=0&&
-        Monotonicity_Change_Left(80,20)!=0&&Monotonicity_Change_Right(80,20)==0&&
-        Find_Left_Down_Point(115,60)
+        Continuity_Change_Right(119,41)==0&&Continuity_Change_Left(119,41)!=0&&
+        Monotonicity_Change_Left(100,20)!=0&&Monotonicity_Change_Right(100,20)==0&&
+        Find_Left_Down_Point(115,50)
         )
     {
         return 1;
@@ -119,9 +139,9 @@ int Ring_Start_Test()
     else if(rd.Left_Lost_Time<rd.Right_Lost_Time&&
             abs(rd.Left_Lost_Time-rd.Right_Lost_Time)>25&&
             (rd.Left_Lost_Time+rd.Right_Lost_Time)<190&&
-            Continuity_Change_Right(119,51)!=0&&Continuity_Change_Left(119,51)==0&&
-            Monotonicity_Change_Left(80,20)==0&&Monotonicity_Change_Right(80,20)!=0&&
-            Find_Right_Down_Point(115,60)
+            Continuity_Change_Right(119,41)!=0&&Continuity_Change_Left(119,41)==0&&
+            Monotonicity_Change_Left(100,20)==0&&Monotonicity_Change_Right(100,20)!=0&&
+            Find_Right_Down_Point(115,50)
             )
         {
             return 2;
@@ -173,9 +193,9 @@ void Ring_Search()
             rd.Ring_Start_R--;
      }
 
-     if(rd.Ring_Start_L>=3)//连续三幅图左环标志，进左环处理，阈值可调
+     if(rd.Ring_Start_L>=1)//连续三幅图左环标志，进左环处理，阈值可调
            rd.Ring_Flag=1;
-     else if(rd.Ring_Start_R>=3)//连续三幅图右环标志，进右环处理
+     else if(rd.Ring_Start_R>=1)//连续三幅图右环标志，进右环处理
            rd.Ring_Flag=2;
 }
 //左环状态机
@@ -225,6 +245,7 @@ void Left_Ring()
                         island_state_3_up[0]= Left_Up_Guai[0];
                         island_state_3_up[1]= Left_Up_Guai[1];
                         k=(float)((float)(MT9V03X_H-island_state_3_up[0])/(float)(MT9V03X_W-20-island_state_3_up[1]));
+                        rd.add_k=k;
                         K_Draw_Line(k,MT9V03X_W-30,MT9V03X_H-1,0);//记录下第一次上点出现时位置，针对这个环岛拉一条死线，入环
                         image_process();//刷新边界数据
                     }
@@ -253,19 +274,27 @@ void Left_Ring()
                     }
          }
      }
-            else if(rd.state==5)//出环
+     else if(rd.state==5)//出环
             {
+             if(k!=0){
                 K_Add_Boundry_Right(k,island_state_5_down[1],island_state_5_down[0],0);
-                if((rd.state==5)&&(rd.R_Edgepoint_y<MT9V03X_H-20))//右边先丢线
+             }
+                if((rd.state==5)&&(rd.R_Edgepoint_y<rd.L_Edgepoint_y))//右边先丢线
+                {
+                    rd.state=6;
+                }
+                if(abs(FJ_Angle)>300)
                 {
                     rd.state=6;
                 }
             }
             else if(rd.state==6)//还在出
             {
+                if(k!=0){
                 K_Add_Boundry_Right(k,island_state_5_down[1],island_state_5_down[0],0);
-                if((rd.state==6)&&(rd.R_Edgepoint_y>MT9V03X_H-10))//右边不丢线-陀螺仪待补充
-                {//
+                }
+                if(((rd.state==6)&&(rd.R_Edgepoint_y>MT9V03X_H-10))||(abs(FJ_Angle)>330))//右边不丢线-陀螺仪待补充
+                {
                     k=0;
                     rd.state=7;
                 }
@@ -369,7 +398,7 @@ void Right_Ring()
     {
         if(abs(FJ_Angle)>200)//积分200度以后在打开出环判断
         {
-            monotonicity_change_line[0]=Monotonicity_Change_Left(90,10);//单调性改变
+            monotonicity_change_line[0]=Monotonicity_Change_Left(110,30);//单调性改变
             monotonicity_change_line[1]=l_border[monotonicity_change_line[0]];
             if(rd.state==4&&Continuity_Change_Left(110,40)!=0)//有陀螺仪后添加陀螺仪判据，积分满220以上
             {
@@ -384,26 +413,40 @@ void Right_Ring()
     }
     else if(rd.state==5)//准备出环岛
     {
+        if(k!=0){
          K_Add_Boundry_Left(k,island_state_5_down[1],island_state_5_down[0],0);
-         if(rd.state==5&&rd.L_Edgepoint_y<MT9V03X_H-20)//左边先丢线
+        }
+         if(rd.state==5&&(rd.R_Edgepoint_y<rd.L_Edgepoint_y))//左边先丢线
          {
                rd.state=6;
+         }
+         if(abs(FJ_Angle)>270)
+         {
+             rd.state=6;
          }
     }
     else if(rd.state==6)//继续出
          {
+        if(k!=0){
              K_Add_Boundry_Left(k,island_state_5_down[1],island_state_5_down[0],0);
+        }
              if((rd.state==6)&&(rd.L_Edgepoint_y>MT9V03X_H-10))//左边先丢线-此处可以添加陀螺仪判据积分300度
              {//
+                 k=0;
+                 rd.state=7;
+             }
+             if(abs(FJ_Angle)>300)
+             {
                  k=0;
                  rd.state=7;
              }
          }
     else if(rd.state==7)//基本出环岛，找角点
           {
-              Right_Up_Guai[0]=Find_Right_Up_Point(MT9V03X_H-10,0);//获取左上点坐标，找到了去8
+              Right_Up_Guai[0]=Find_Right_Up_Point(MT9V03X_H-50,30);//获取左上点坐标，找到了去8
+              rd.right_up_guai=Right_Up_Guai[0];
               Right_Up_Guai[1]=r_border[Right_Up_Guai[0]];
-              if((rd.state==7)&&((Right_Up_Guai[1]>=MT9V03X_W-88&&(5<=Right_Up_Guai[0]&&Right_Up_Guai[0]<=MT9V03X_H-20))))//注意这里，对横纵坐标都有要求，因为赛道不一样，会意外出现拐点
+              if((rd.state==7)&&((Right_Up_Guai[1]>=MT9V03X_W-58&&(5<=Right_Up_Guai[0]&&Right_Up_Guai[0]<=MT9V03X_H-20))))//注意这里，对横纵坐标都有要求，因为赛道不一样，会意外出现拐点
               {//当角点位置合理时，进8
                   rd.state=8;
               }
@@ -411,6 +454,7 @@ void Right_Ring()
     else if(rd.state==8)//环岛8
             {
                 Right_Up_Guai[0]=Find_Right_Up_Point(MT9V03X_H-1,10);//获取右上点坐标
+                rd.right_up_guai=Right_Up_Guai[0];
                 Right_Up_Guai[1]=r_border[Right_Up_Guai[0]];
                 //Lengthen_Right_Boundry(Right_Up_Guai[0]-1,MT9V03X_H-1);
                 if(k==0)
@@ -429,7 +473,7 @@ void Right_Ring()
             }
     else if(rd.state==9)
     {
-        if(rd.Ring_Leave_time>=1000)
+        if(rd.Ring_Leave_time>=3000)
         {
             rd.state=0;
             rd.Ring_Flag=0;
@@ -459,8 +503,6 @@ int Find_Right_Down_Point(int start,int end)//找四个角点，返回值是角点所在的行数
     }
     if(start>=MT9V03X_H-1-5)//下面5行数据不稳定，不能作为边界点来判断，舍弃
         start=MT9V03X_H-1-5;
-    if(end<=MT9V03X_H-Search_Stop_Line)
-        end=MT9V03X_H-Search_Stop_Line;
     if(end<=5)
        end=5;
     for(i=start;i>=end;i--)
@@ -468,10 +510,9 @@ int Find_Right_Down_Point(int start,int end)//找四个角点，返回值是角点所在的行数
         if(right_down_line==0&&//只找第一个符合条件的点
            abs(r_border[i]-r_border[i+1])<=5&&//角点的阈值可以更改
            abs(r_border[i+1]-r_border[i+2])<=5&&
-           abs(r_border[i+2]-r_border[i+3])<=5&&
-              (r_border[i]-r_border[i-2])<=-5&&
-              (r_border[i]-r_border[i-3])<=-10&&
-              (r_border[i]-r_border[i-4])<=-10)
+              (r_border[i]-r_border[i-1])<=-5&&
+              (r_border[i]-r_border[i-2])<=-10&&
+              (r_border[i]-r_border[i-3])<=-10)
         {
             right_down_line=i;//获取行数即可
             break;
@@ -498,8 +539,7 @@ int Find_Right_Up_Point(int start,int end)//找四个角点，返回值是角点所在的行数
         start=end;
         end=t;
     }
-    if(end<=MT9V03X_H-Search_Stop_Line)//搜索截止行往上的全都不判
-        end=MT9V03X_H-Search_Stop_Line;
+
     if(end<=5)//及时最长白列非常长，也要舍弃部分点，防止数组越界
         end=5;
     if(start>=MT9V03X_H-1-5)
@@ -507,12 +547,11 @@ int Find_Right_Up_Point(int start,int end)//找四个角点，返回值是角点所在的行数
     for(i=start;i>=end;i--)
     {
         if(right_up_line==0&&//只找第一个符合条件的点
-           abs(r_border[i]-r_border[i-1])<=5&&//下面两行位置差不多
-           abs(r_border[i-1]-r_border[i-2])<=5&&
-           abs(r_border[i-2]-r_border[i-3])<=5&&
-              (r_border[i]-r_border[i+2])<=-8&&
-              (r_border[i]-r_border[i+3])<=-15&&
-              (r_border[i]-r_border[i+4])<=-15)
+           abs(r_border[i]-r_border[i-1])<=6&&//下面两行位置差不多
+           abs(r_border[i-1]-r_border[i-2])<=6&&
+              (r_border[i]-r_border[i+1])<=-6&&
+              (r_border[i]-r_border[i+2])<=-8
+              )
         {
             right_up_line=i;//获取行数即可
             break;
@@ -539,8 +578,6 @@ int Find_Left_Up_Point(int start,int end)//找四个角点，返回值是角点所在的行数
         start=end;
         end=t;
     }
-    if(end<=MT9V03X_H-Search_Stop_Line)//搜索截止行往上的全都不判
-        end=MT9V03X_H-Search_Stop_Line;
     if(end<=5)//及时最长白列非常长，也要舍弃部分点，防止数组越界
         end=5;
     if(start>=MT9V03X_H-1-5)
@@ -583,16 +620,13 @@ int Find_Left_Down_Point(int start,int end)//找四个角点，返回值是角点所在的行数
     }
     if(start>=MT9V03X_H-1-5)//下面5行数据不稳定，不能作为边界点来判断，舍弃
         start=MT9V03X_H-1-5;
-    if(end<=MT9V03X_H-Search_Stop_Line)
-        end=MT9V03X_H-Search_Stop_Line;
     if(end<=5)
        end=5;
     for(i=start;i>=end;i--)
     {
         if(left_down_line==0&&//只找第一个符合条件的点
-           abs(l_border[i]-l_border[i+1])<=5&&//角点的阈值可以更改
-           abs(l_border[i+1]-l_border[i+2])<=5&&
-           abs(l_border[i+2]-l_border[i+3])<=5&&
+           abs(l_border[i]-l_border[i+1])<=6&&//角点的阈值可以更改
+           abs(l_border[i+1]-l_border[i+2])<=6&&
               (l_border[i]-l_border[i-2])>=5&&
               (l_border[i]-l_border[i-3])>=10&&
               (l_border[i]-l_border[i-4])>=10)
@@ -1185,4 +1219,189 @@ void Draw_Line(int startX, int startY, int endX, int endY)
             bin_image[y][i] = black_pixel;
         }
     }
+}
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     找下面的两个拐点，供十字使用
+  @param     搜索的范围起点，终点
+  @return    修改两个全局变量
+             Right_Down_Find=0;
+             Left_Down_Find=0;
+  Sample     Find_Down_Point(int start,int end)
+  @note      运行完之后查看对应的变量，注意，没找到时对应变量将是0
+-------------------------------------------------------------------------------------------------------------------*/
+void Find_Down_Point(int start,int end)
+{
+    int i,t;
+    Right_Down_Find=0;
+    Left_Down_Find=0;
+    if(start<end)
+    {
+        t=start;
+        start=end;
+        end=t;
+    }
+    if(start>=MT9V03X_H-1-5)//下面5行数据不稳定，不能作为边界点来判断，舍弃
+        start=MT9V03X_H-1-5;
+    if(end<=MT9V03X_H-Search_Stop_Line)
+        end=MT9V03X_H-Search_Stop_Line;
+    if(end<=5)
+       end=5;
+    for(i=start;i>=end;i--)
+    {
+        if(Left_Down_Find==0&&//只找第一个符合条件的点
+           abs(l_border[i]-l_border[i+1])<=5&&//角点的阈值可以更改
+           abs(l_border[i+1]-l_border[i+2])<=5&&
+           abs(l_border[i+2]-l_border[i+3])<=5&&
+              (l_border[i]-l_border[i-2])>=8&&
+              (l_border[i]-l_border[i-3])>=15&&
+              (l_border[i]-l_border[i-4])>=15)
+        {
+            Left_Down_Find=i;//获取行数即可
+        }
+        if(Right_Down_Find==0&&//只找第一个符合条件的点
+           abs(r_border[i]-r_border[i+1])<=5&&//角点的阈值可以更改
+           abs(r_border[i+1]-r_border[i+2])<=5&&
+           abs(r_border[i+2]-r_border[i+3])<=5&&
+              (r_border[i]-r_border[i-2])<=-8&&
+              (r_border[i]-r_border[i-3])<=-15&&
+              (r_border[i]-r_border[i-4])<=-15)
+        {
+            Right_Down_Find=i;
+        }
+        if(Left_Down_Find!=0&&Right_Down_Find!=0)//两个找到就退出
+        {
+            break;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     找上面的两个拐点，供十字使用
+  @param     搜索的范围起点，终点
+  @return    修改两个全局变量
+             Left_Up_Find=0;
+             Right_Up_Find=0;
+  Sample     Find_Up_Point(int start,int end)
+  @note      运行完之后查看对应的变量，注意，没找到时对应变量将是0
+-------------------------------------------------------------------------------------------------------------------*/
+void Find_Up_Point(int start,int end)
+{
+    int i,t;
+    Left_Up_Find=0;
+    Right_Up_Find=0;
+    if(start<end)
+    {
+        t=start;
+        start=end;
+        end=t;
+    }
+    if(end<=MT9V03X_H-Search_Stop_Line)
+        end=MT9V03X_H-Search_Stop_Line;
+    if(end<=5)//及时最长白列非常长，也要舍弃部分点，防止数组越界
+        end=5;
+    if(start>=MT9V03X_H-1-5)//下面5行数据不稳定，不能作为边界点来判断，舍弃
+        start=MT9V03X_H-1-5;
+    for(i=start;i>=end;i--)
+    {
+        if(Left_Up_Find==0&&//只找第一个符合条件的点
+           abs(l_border[i]-l_border[i-1])<=5&&
+           abs(l_border[i-1]-l_border[i-2])<=5&&
+           abs(l_border[i-2]-l_border[i-3])<=5&&
+              (l_border[i]-l_border[i+2])>=8&&
+              (l_border[i]-l_border[i+3])>=15&&
+              (l_border[i]-l_border[i+4])>=15)
+        {
+            Left_Up_Find=i;//获取行数即可
+        }
+        if(Right_Up_Find==0&&//只找第一个符合条件的点
+           abs(r_border[i]-r_border[i-1])<=5&&//下面两行位置差不多
+           abs(r_border[i-1]-r_border[i-2])<=5&&
+           abs(r_border[i-2]-r_border[i-3])<=5&&
+              (r_border[i]-r_border[i+2])<=-8&&
+              (r_border[i]-r_border[i+3])<=-15&&
+              (r_border[i]-r_border[i+4])<=-15)
+        {
+            Right_Up_Find=i;//获取行数即可
+        }
+        if(Left_Up_Find!=0&&Right_Up_Find!=0)//下面两个找到就出去
+        {
+            break;
+        }
+    }
+    if(abs(Right_Up_Find-Left_Up_Find)>=30)//纵向撕裂过大，视为误判
+    {
+        Right_Up_Find=0;
+        Left_Up_Find=0;
+    }
+}
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     十字检测
+  @param     null
+  @return    null
+  Sample     Cross_Detect(void);
+  @note      利用四个拐点判别函数，查找四个角点，根据找到拐点的个数决定是否补线
+-------------------------------------------------------------------------------------------------------------------*/
+void Cross_Detect()
+{
+    int down_search_start=0;//下点搜索开始行
+    Cross_Flag=0;
+    if(rd.state==0&&rd.Ring_Flag==0)//与环岛互斥开
+    {
+        Left_Up_Find=0;
+        Right_Up_Find=0;
+        if(rd.Both_Lost_Time>=10)//十字必定有双边丢线，在有双边丢线的情况下再开始找角点
+        {
+            Find_Up_Point( MT9V03X_H-1, 0 );
+            if(Left_Up_Find==0&&Right_Up_Find==0)//只要没有同时找到两个上点，直接结束
+            {
+                return;
+            }
+        }
+        if(Left_Up_Find!=0&&Right_Up_Find!=0)//找到两个上点，就找到十字了
+        {
+            Cross_Flag=1;//对应标志位，便于各元素互斥掉
+            down_search_start=Left_Up_Find>Right_Up_Find?Left_Up_Find:Right_Up_Find;//用两个上拐点坐标靠下者作为下点的搜索上限
+            Find_Down_Point(MT9V03X_H-5,down_search_start+2);//在上拐点下2行作为下点的截止行
+            if(Left_Down_Find<=Left_Up_Find)
+            {
+                Left_Down_Find=0;//下点不可能比上点还靠上
+            }
+            if(Right_Down_Find<=Right_Up_Find)
+            {
+                Right_Down_Find=0;//下点不可能比上点还靠上
+            }
+            if(Left_Down_Find!=0&&Right_Down_Find!=0)
+            {//四个点都在，无脑连线，这种情况显然很少
+                Left_Add_Line (l_border [Left_Up_Find ],Left_Up_Find ,l_border [Left_Down_Find ] ,Left_Down_Find);
+                Right_Add_Line(r_border[Right_Up_Find],Right_Up_Find,r_border[Right_Down_Find],Right_Down_Find);
+            }
+            else if(Left_Down_Find==0&&Right_Down_Find!=0)//11//这里使用的都是斜率补线
+            {//三个点                                     //01
+                Lengthen_Left_Boundry(Left_Up_Find-1,MT9V03X_H-1);
+                Right_Add_Line(r_border[Right_Up_Find],Right_Up_Find,r_border[Right_Down_Find],Right_Down_Find);
+            }
+            else if(Left_Down_Find!=0&&Right_Down_Find==0)//11
+            {//三个点                                     //10
+                Left_Add_Line (l_border [Left_Up_Find ],Left_Up_Find ,l_border [Left_Down_Find ] ,Left_Down_Find);
+                Lengthen_Right_Boundry(Right_Up_Find-1,MT9V03X_H-1);
+            }
+            else if(Left_Down_Find==0&&Right_Down_Find==0)//11
+            {//就俩上点                                   //00
+                Lengthen_Left_Boundry (Left_Up_Find-1,MT9V03X_H-1);
+                Lengthen_Right_Boundry(Right_Up_Find-1,MT9V03X_H-1);
+            }
+        }
+        else
+        {
+            Cross_Flag=0;
+        }
+    }
+    //角点相关变量，debug使用
+    //ips200_showuint8(0,12,Cross_Flag);
+//    ips200_showuint8(0,13,Island_State);
+//    ips200_showuint8(50,12,Left_Up_Find);
+//    ips200_showuint8(100,12,Right_Up_Find);
+//    ips200_showuint8(50,13,Left_Down_Find);
+//    ips200_showuint8(100,13,Right_Down_Find);
 }

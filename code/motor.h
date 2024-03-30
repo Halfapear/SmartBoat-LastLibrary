@@ -30,6 +30,7 @@ typedef struct
     float error,last_error;
     float P,I,D;
     float intergrator;
+    float turnP,turnD,turnI;
 
 }Turn_ct;
 
