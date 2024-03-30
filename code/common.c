@@ -36,6 +36,7 @@
 int16 ms=0;
 int32 s=0;
 int16 b_s;
+int16 EndTime=0;
 int16 encoder_data_quaddec = 0;
 int16 encoder_derdate=0;
 

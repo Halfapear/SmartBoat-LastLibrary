@@ -44,6 +44,10 @@
 #define BEEP                (C13)
 #define PIT_CH                  (TIM3_PIT)                                      // 使用的周期中断编号 如果修改 需要同步对应修改周期中断编号与 isr.c 中的调用
 #define PIT_PRIORITY            (TIM3_IRQn)                                      // 对应周期中断的中断编号
+//#define RING                  (0)
+//#define TFT                     (1)
+#define WIRELESS        (0)
+//#define SPI                 (0)
 uint8 count = 0;
 
 int main (void)
@@ -73,9 +77,6 @@ int main (void)
     key_init (5);
     exti_initconfig ();
 
-    //uint8 TP[20];
-    //uint8 TI[20];
-    //uint8 TD[20];
     while(1)
     {
         // 此处编写需要循环执行的代码
@@ -116,12 +117,13 @@ int main (void)
 
         }
         image_process();
-
+        //Get_Four_jiao();
         GetLostTime();//获取一些辅助标志位
         Get_Edge_Point();
          //ring标志变化处，因为判断要用到左右边界
          //如果是补边线的话，直接补顺序进行即可
          //如果对图像进行补线，需要重*新*搜*线
+#if 1
          if(rd.Ring_Flag==0&&Cross_Flag==0){//圆环搜索
                Ring_Search();
               if(rd.Ring_Flag!=0)
@@ -133,12 +135,15 @@ int main (void)
             else if(rd.Ring_Flag==2){//右环
                   Right_Ring();//写完了，但感觉跑不起来
             }
-
+#endif
+         //Find_Up_Point( MT9V03X_H-1, 10 );
+         //Find_Down_Point(MT9V03X_H-5,40);
+         crosswalk();
          Cross_Detect();
          GetCenterline();
          Turn.Chazhi=Err_Sum();
 
-#if 0
+/*#if WIRELESS
         func_float_to_str(TP,Turn.turnP,2);
         func_float_to_str(TD,Turn.turnD,2);
         func_float_to_str(TI,Turn.turnI,2);
@@ -154,7 +159,7 @@ int main (void)
         wireless_uart_send_string(TI);
         wireless_uart_send_byte('\r');
         wireless_uart_send_byte('\n');
-#endif
+#endif*/
 
 
         // 此处编写需要循环执行的代码

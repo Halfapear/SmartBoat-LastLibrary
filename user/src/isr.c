@@ -318,7 +318,7 @@ void TIM3_IRQHandler(void)
                   gpio_toggle_level(E2);
 
               }
-              if(rd.Ring_Flag!=0&&b_s==0)
+              if((rd.Ring_Flag!=0)&&b_s==0)
               {
                   gpio_set_level(BEEP, GPIO_HIGH);
                   b_s=1;
@@ -330,6 +330,11 @@ void TIM3_IRQHandler(void)
                    ms=0;
                    if(b_s>=1&&b_s<5)
                        b_s++;
+                   if(EndTime>=1&&s>=10)
+                   {
+                       EndTime++;
+                   }
+
               }
               if(b_s>=3)
               {
@@ -339,19 +344,33 @@ void TIM3_IRQHandler(void)
               if(ms%20==0)
               {
                  GetSpeed();
+
                  if(rd.state==3)
                  {
                      encoder_derdate+=encoder_data_quaddec;
                  }
               }
+              //无刷速度设置
 
               if(s<=3)
               {
                   bl_duty=500;
               }
-              else
+              else if(s>3&&EndTime==0)
               {
                   bl_duty=980;
+              }
+              else if(EndTime<4)
+              {
+                  bl_duty=980;
+              }
+              else
+              {
+                  bl_duty=500;
+              }
+              if(EndTime>3)
+              {
+                  Speed.Set_Speed=0;
               }
 
 
