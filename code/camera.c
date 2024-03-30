@@ -503,8 +503,6 @@ int Find_Right_Down_Point(int start,int end)//找四个角点，返回值是角点所在的行数
     }
     if(start>=MT9V03X_H-1-5)//下面5行数据不稳定，不能作为边界点来判断，舍弃
         start=MT9V03X_H-1-5;
-    if(end<=MT9V03X_H-Search_Stop_Line)
-        end=MT9V03X_H-Search_Stop_Line;
     if(end<=5)
        end=5;
     for(i=start;i>=end;i--)
@@ -512,10 +510,9 @@ int Find_Right_Down_Point(int start,int end)//找四个角点，返回值是角点所在的行数
         if(right_down_line==0&&//只找第一个符合条件的点
            abs(r_border[i]-r_border[i+1])<=5&&//角点的阈值可以更改
            abs(r_border[i+1]-r_border[i+2])<=5&&
-           abs(r_border[i+2]-r_border[i+3])<=5&&
-              (r_border[i]-r_border[i-2])<=-5&&
-              (r_border[i]-r_border[i-3])<=-10&&
-              (r_border[i]-r_border[i-4])<=-10)
+              (r_border[i]-r_border[i-1])<=-5&&
+              (r_border[i]-r_border[i-2])<=-10&&
+              (r_border[i]-r_border[i-3])<=-10)
         {
             right_down_line=i;//获取行数即可
             break;
@@ -550,8 +547,8 @@ int Find_Right_Up_Point(int start,int end)//找四个角点，返回值是角点所在的行数
     for(i=start;i>=end;i--)
     {
         if(right_up_line==0&&//只找第一个符合条件的点
-           abs(r_border[i]-r_border[i-1])<=8&&//下面两行位置差不多
-           abs(r_border[i-1]-r_border[i-2])<=8&&
+           abs(r_border[i]-r_border[i-1])<=6&&//下面两行位置差不多
+           abs(r_border[i-1]-r_border[i-2])<=6&&
               (r_border[i]-r_border[i+1])<=-6&&
               (r_border[i]-r_border[i+2])<=-8
               )
@@ -581,8 +578,6 @@ int Find_Left_Up_Point(int start,int end)//找四个角点，返回值是角点所在的行数
         start=end;
         end=t;
     }
-    if(end<=MT9V03X_H-Search_Stop_Line)//搜索截止行往上的全都不判
-        end=MT9V03X_H-Search_Stop_Line;
     if(end<=5)//及时最长白列非常长，也要舍弃部分点，防止数组越界
         end=5;
     if(start>=MT9V03X_H-1-5)
@@ -625,15 +620,13 @@ int Find_Left_Down_Point(int start,int end)//找四个角点，返回值是角点所在的行数
     }
     if(start>=MT9V03X_H-1-5)//下面5行数据不稳定，不能作为边界点来判断，舍弃
         start=MT9V03X_H-1-5;
-    if(end<=MT9V03X_H-Search_Stop_Line)
-        end=MT9V03X_H-Search_Stop_Line;
     if(end<=5)
        end=5;
     for(i=start;i>=end;i--)
     {
         if(left_down_line==0&&//只找第一个符合条件的点
-           abs(l_border[i]-l_border[i+1])<=5&&//角点的阈值可以更改
-           abs(l_border[i+1]-l_border[i+2])<=5&&
+           abs(l_border[i]-l_border[i+1])<=6&&//角点的阈值可以更改
+           abs(l_border[i+1]-l_border[i+2])<=6&&
               (l_border[i]-l_border[i-2])>=5&&
               (l_border[i]-l_border[i-3])>=10&&
               (l_border[i]-l_border[i-4])>=10)
