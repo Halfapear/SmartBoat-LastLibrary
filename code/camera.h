@@ -27,14 +27,28 @@ typedef struct
     uint16 Both_Lost_Time;//两边同时丢线数
     float add_k;
     uint16 right_up_guai;//右上拐点行数
+    uint16 state2_time;
 }Round;
 
 
 extern uint8 Cross_Flag;
+extern int16 LUJ;
+extern int16 RUJ;
+extern int16 LDJ;
+extern int16 RDJ;
+extern int16 Left_Down_Find; //十字使用，找到被置行数，没找到就是0
+extern int16 Left_Up_Find;   //四个拐点标志
+extern int16 Right_Down_Find;
+extern int16 Right_Up_Find;
 
 extern Round rd;
-extern uint8_t Pixle[35][100]; // 假设这是你的像素数组的大小
+//extern uint8_t image[35][100]; // 假设这是你的像素数组的大小
 extern uint8_t garageout_flag; // 用于指示是否检测到斑马线的标志
+
+extern uint8_t region ;
+extern uint8_t garage_count ;
+extern uint8_t white_black ;
+extern uint8_t black_white;
 
 extern uint8_t region ;
 extern uint8_t garage_count ;
@@ -44,6 +58,7 @@ extern float Err_Sum(void);
 void Round_init();
 void GetLostTime();
 void Get_Edge_Point();
+void Get_Four_jiao();
 
 void Ring_Search();
 void Right_Ring();

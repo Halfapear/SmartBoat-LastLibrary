@@ -1,5 +1,6 @@
 #include "motor.h"
 #include "common.h"
+#include  "camera.h"
 #define ENCODER_QUADDEC                 (TIM9_ENCOEDER)
 
 //无刷左
@@ -39,10 +40,10 @@ int16 turnmin=-2000;
 
 void Para_init()
 {
-    bl_duty=880;//无刷电机调速
+    bl_duty=500;//无刷电机调速
     PWM.Left_Out=0;
     PWM.Right_Out=0;
-    Speed.Set_Speed=3000;
+    Speed.Set_Speed=3300;
     //Speed.Speed_Max=4000;
 
     Speed.Speed_Now=0;
@@ -77,7 +78,7 @@ void Para_init()
     Turn.turnD=0;
 
     Turn.P=1.3;
-    Turn.I=1;
+    Turn.I=0.8;
     Turn.D=5;
 }
 //编码器速度获取与处理
@@ -85,6 +86,10 @@ void Para_init()
 void GetSpeed()
 {
     encoder_data_quaddec = encoder_get_count(ENCODER_QUADDEC);                  // 获取编码器计数
+    if(rd.state==2)
+    {
+        rd.state2_time+=encoder_data_quaddec;
+    }
     Speed.Speed_Now=encoder_data_quaddec*40;
     encoder_clear_count(ENCODER_QUADDEC);                                       // 清空编码器计数
     Speed.Speed_Car=0.9*Speed.Speed_Now+0.1*Speed.Speed_Old;        //减小抖动
@@ -107,10 +112,10 @@ void SpeedPID_Control()
     Speed.D_Error=Speed.Error-Speed.L_Error;                            //微分环节
 
     Speed.Output_PWM=Speed.P*Speed.P_Error+Speed.I*Speed.I_Error+Speed.D*Speed.D_Error;
-    if(Speed.Output_PWM>3500)
-        Speed.Output_PWM=3500;
-    else if(Speed.Output_PWM<-3500)
-        Speed.Output_PWM=-3500;
+    if(Speed.Output_PWM>4000)
+        Speed.Output_PWM=4000;
+    else if(Speed.Output_PWM<-4000)
+        Speed.Output_PWM=-4000;
 
 }
 //转向环pd
@@ -129,16 +134,18 @@ void TurnPD_Control()
     Turn.turnI=Turn.intergrator*Turn.I;
     Turn.PWM_Dout=Turn.P*Turn.error+Turn.intergrator*Turn.I+Turn.D*(Turn.error-Turn.last_error);
     Turn.last_error = Turn.error;
-    if(Turn.PWM_Dout>100)
-        Turn.PWM_Dout=100;
-    else if(Turn.PWM_Dout<-100)
-        Turn.PWM_Dout=-100;
+    if(Turn.PWM_Dout>80)
+        Turn.PWM_Dout=80;
+    else if(Turn.PWM_Dout<-80)
+        Turn.PWM_Dout=-80;
 
 
 }
 //设置无刷电机的转速，duty范围500-1000
 void set_brushless_duty(int16 duty)
 {
+    if(duty>1000)
+        duty=980;
     pwm_set_duty(PWM_D1, duty);
     pwm_set_duty(PWM_D2, duty);
 }
@@ -209,27 +216,28 @@ void PWM_Out()
 
     if(Turn.PWM_Lout>0)
     {
-        gpio_set_level(DIR_L2, GPIO_LOW);
-        pwm_set_duty(PWM_L2,Turn.PWM_Lout);
-
+            gpio_set_level(DIR_L2, GPIO_LOW);
+            pwm_set_duty(PWM_L2,Turn.PWM_Lout);
     }
-    else {
-        gpio_set_level(DIR_L2, GPIO_HIGH);
-        pwm_set_duty(PWM_L2,-Turn.PWM_Lout);
-    }
+    else
+    {
+            gpio_set_level(DIR_L2, GPIO_HIGH);
+            pwm_set_duty(PWM_L2,-Turn.PWM_Lout);
+     }
 
     if(Turn.PWM_Rout>0)
-        {
+    {
             gpio_set_level(DIR_R2, GPIO_LOW);
             pwm_set_duty(PWM_R2,Turn.PWM_Rout);
-        }
-        else {
+     }
+     else
+     {
             gpio_set_level(DIR_R2, GPIO_HIGH);
             pwm_set_duty(PWM_R2,-Turn.PWM_Rout);
-        }
+      }
 
 
 }
 void stop(){
-    Speed.Set_Speed = 0;
+    EndTime=1;
 }
