@@ -44,8 +44,8 @@
 #define BEEP                (C13)
 #define PIT_CH                  (TIM3_PIT)                                      // 使用的周期中断编号 如果修改 需要同步对应修改周期中断编号与 isr.c 中的调用
 #define PIT_PRIORITY            (TIM3_IRQn)                                      // 对应周期中断的中断编号
-//#define RING                  (0)
-//#define TFT                     (1)
+#define RING                  (1)
+#define TFT                     (1)
 #define WIRELESS        (0)
 //#define SPI                 (0)
 uint8 count = 0;
@@ -68,7 +68,7 @@ int main (void)
     uint8_t List_Number=1;
     //    * List_Number_p=&List_Number;
     List_Number_p=&List_Number;
-#if 1
+#if TFT
     tft180_set_dir(TFT180_CROSSWISE);
     tft180_set_color(RGB565_RED, RGB565_BLACK);
     tft180_init();
@@ -83,8 +83,8 @@ int main (void)
         key_scanner();
 
         //set_brushless_duty(bl_duty);
-#if 1
-        if(garageout_flag == 0){
+#if TFT
+
                if(in_second_menu == 0){
                         tft180_show_uint (0,16*7,List_Number ,9);
                         Display_Initial_Menu();
@@ -95,17 +95,13 @@ int main (void)
                         //消一下key4中断状态
                         exti_state[3] = 0;
                         count = 0;
-                    }
-                    else {
-                        if(count ==0){
-                        tft180_clear();
-                        count++;
-                        }
-                        Display_Second_Menu(List_Number_p);
-                    }
                 }
                 else {
-                    stop();
+                    if(count ==0){
+                        tft180_clear();
+                        count++;
+                    }
+                    Display_Second_Menu(List_Number_p);
                 }
 #endif
         key_clear_all_state();
@@ -123,25 +119,55 @@ int main (void)
          //ring标志变化处，因为判断要用到左右边界
          //如果是补边线的话，直接补顺序进行即可
          //如果对图像进行补线，需要重*新*搜*线
-#if 1
-         if(rd.Ring_Flag==0&&Cross_Flag==0){//圆环搜索
+#if RING
+         if(rd.Ring_Flag==0&&Cross_Flag==0&&Ring_Count<=0){//圆环搜索
                Ring_Search();
               if(rd.Ring_Flag!=0)
                  rd.state=1;
            }
            else if(rd.Ring_Flag==1){//左环
-               Left_Ring();
+                 Ring_Count++;
+                 Left_Ring();
             }
             else if(rd.Ring_Flag==2){//右环
-                  Right_Ring();//写完了，但感觉跑不起来
+                 Ring_Count++;
+                 Right_Ring();//写完了，但感觉跑不起来
             }
+#endif
+#if !RING
+         if(rd.Ring_Flag==0&&Cross_Flag==0&&Ring_Count<=0){//圆环搜索
+               Ring_Search();
+               if(rd.Ring_Flag!=0)
+                    rd.state=1;
+         }
+         else if(rd.Ring_Flag==1){//左环
+               Ring_Count++;
+               Add_line_from_right();
+               if(abs(FJ_Angle)>75){
+                   rd.state=9;//清除陀螺仪用
+                   rd.Ring_Flag=0;
+                   FJ_Angle=0;
+               }
+         }
+         else if(rd.Ring_Flag==2){//右环
+               Ring_Count++;
+               Add_line_from_left();
+               if(abs(FJ_Angle)>75){
+                   rd.state=9;
+                   rd.Ring_Flag=0;
+                   FJ_Angle=0;
+               }
+         }
 #endif
          //Find_Up_Point( MT9V03X_H-1, 10 );
          //Find_Down_Point(MT9V03X_H-5,40);
-         crosswalk();
          Cross_Detect();
+         crosswalk();
          GetCenterline();
          Turn.Chazhi=Err_Sum();
+
+         if(garageout_flag==1)
+             stop();
 
 /*#if WIRELESS
         func_float_to_str(TP,Turn.turnP,2);

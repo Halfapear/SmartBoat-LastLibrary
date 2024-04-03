@@ -3,6 +3,22 @@
 
 Round rd;
 #define Search_Stop_Line 40
+
+const uint8 Standard_Road_Wide[MT9V03X_H]=//标准赛宽
+{ 34, 35, 36, 38, 39, 41, 42, 44, 45, 47,
+  48, 49, 51, 52, 54, 55, 56, 58, 59, 61,
+  62, 63, 65, 66, 68, 69, 70, 72, 73, 75,
+  76, 77, 79, 80, 81, 83, 84, 86, 87, 88,
+  90, 91, 93, 94, 95,97,98,100,101,102,
+ 104,105,107,108,109,111,112,114,115,116,
+ 118,119,121,122,123,125,126,128,129,130,
+ 132, 133, 135, 136, 137, 139, 140, 142, 143, 144,
+ 146, 147, 149, 150, 151, 153, 154, 156, 157, 158,
+ 160, 161, 163, 164, 165, 167, 168, 170, 171, 172,
+ 174, 175, 176, 178, 179, 181, 182, 183, 185, 186,
+ 188, 189, 190, 192, 193, 195, 196, 197, 199, 200
+
+};
 //十字
 uint8 Cross_Flag=0;
 int16 Left_Down_Find=0; //十字使用，找到被置行数，没找到就是0
@@ -223,6 +239,32 @@ void Ring_Search()
      else if(rd.Ring_Start_R>=1)//连续三幅图右环标志，进右环处理
            rd.Ring_Flag=2;
 }
+//根据左边线和标准赛宽补右线
+void Add_line_from_left()
+{
+    uint8 i=0;
+    for(i=0;i<120;i++)
+    {
+        r_border[i]=l_border[i]+Standard_Road_Wide[i];
+        if(r_border[i]>185)
+            r_border[i]=185;
+    }
+}
+//根据右边线和标准赛宽补左线
+void Add_line_from_right()
+{
+    uint8 i=0;
+    for(i=0;i<120;i++)
+    {
+        l_border[i]=r_border[i]-Standard_Road_Wide[i];
+        if(l_border[i]<2)
+            l_border[i]=2;
+    }
+}
+void Jump_Ring()
+{
+
+}
 //左环状态机
 void Left_Ring()
 {
@@ -391,19 +433,21 @@ void Right_Ring()
          {
              if(k!=0)//已经找到点了，画一条死线
              {
-                 K_Draw_Line(k,25,MT9V03X_H-1,0);
+                 if(k<-1.3)
+                     k=-1.3;
+                 K_Draw_Line(k,20,MT9V03X_H-1,0);
                  image_process();//重新扫线
              }
              else//还在找点
              {
-                 Right_Up_Guai[0]=Find_Right_Up_Point(70,15);//找右上拐点
+                 Right_Up_Guai[0]=Find_Right_Up_Point(60,15);//找右上拐点
                  Right_Up_Guai[1]=r_border[Right_Up_Guai[0]];
                  /*if(Right_Up_Guai[0]<10)//角点位置不对，退出环岛
                  {
                      rd.state=0;
                      rd.Ring_Flag=0;
                  }*/
-                 if(k==0&&(15<=Right_Up_Guai[0]&&Right_Up_Guai[0]<70)&&(70<Right_Up_Guai[1]&&Right_Up_Guai[1]<150)&&Right_Up_Guai[0]>5)
+                 if(k==0&&(15<=Right_Up_Guai[0]&&Right_Up_Guai[0]<70)&&(60<Right_Up_Guai[1]&&Right_Up_Guai[1]<150)&&Right_Up_Guai[0]>5)
                  {//当角点出现在给定范围内
                      //island_state_3_up[0]= Right_Up_Guai[0];
                      //island_state_3_up[1]= Right_Up_Guai[1];

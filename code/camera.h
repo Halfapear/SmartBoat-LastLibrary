@@ -75,6 +75,8 @@ int Continuity_Change_Left(int start,int end);//连续性检验
 int Monotonicity_Change_Right(int start,int end);
 int Monotonicity_Change_Left(int start,int end);//单调性改变，返回值是单调性改变点所在的行数
 //以下为补线函数
+void Add_line_from_left();//标准赛宽补线
+void Add_line_from_right();
 void Left_Add_Line(int x1,int y1,int x2,int y2);
 void Right_Add_Line(int x1,int y1,int x2,int y2);//补边线
 void Lengthen_Left_Boundry(int start,int end);

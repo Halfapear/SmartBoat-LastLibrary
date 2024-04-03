@@ -239,5 +239,6 @@ void PWM_Out()
 
 }
 void stop(){
-    EndTime=1;
+    if(EndTime==0)
+        EndTime=1;
 }
