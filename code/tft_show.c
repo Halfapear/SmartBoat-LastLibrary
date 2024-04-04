@@ -125,11 +125,11 @@ void Display_Grayscale_Image(void)
    //tft180_show_gray_image(0,0,mt9v03x_image[0],image_w,image_h,160,128,0);
    tft180_show_gray_image(0,0,bin_image[0],image_w,image_h,160,128,0);
     tft180_show_int(0,0,rd.state,4);
-                tft180_show_int(0,16,rd.state2_time,5);
-                tft180_show_int(0,16*2,rd.L_Edgepoint_y,4);
-                //tft180_show_int(0,16*3,rd.add_k,4);
-                tft180_show_float(0,16*3,rd.add_k,2,3);
-                tft180_show_int(0,16*4,FJ_Angle,4);
+                tft180_show_int(0,16,rd.Left_Lost_Time,4);
+                tft180_show_int(0,16*2,rd.Right_Lost_Time,4);
+                tft180_show_int(0,16*3,rd.Both_Lost_Time,4);
+                //tft180_show_float(0,16*3,rd.add_k,2,3);
+                tft180_show_int(0,16*4,Right_Down_Find,4);
     for (int16 i = 0; i <image_h-1; i++)
        {
         tft180_draw_point(94,i,RGB565_YELLOW);

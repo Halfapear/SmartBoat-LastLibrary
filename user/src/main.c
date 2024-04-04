@@ -120,17 +120,17 @@ int main (void)
          //如果是补边线的话，直接补顺序进行即可
          //如果对图像进行补线，需要重*新*搜*线
 #if RING
-         if(rd.Ring_Flag==0&&Cross_Flag==0&&Ring_Count<=0){//圆环搜索
+         if(rd.Ring_Flag==0&&Cross_Flag==0){//圆环搜索
                Ring_Search();
               if(rd.Ring_Flag!=0)
                  rd.state=1;
            }
            else if(rd.Ring_Flag==1){//左环
-                 Ring_Count++;
+                // Ring_Count++;
                  Left_Ring();
             }
             else if(rd.Ring_Flag==2){//右环
-                 Ring_Count++;
+                // Ring_Count++;
                  Right_Ring();//写完了，但感觉跑不起来
             }
 #endif

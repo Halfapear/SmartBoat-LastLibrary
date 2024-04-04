@@ -586,7 +586,7 @@ uint8 hightest = 0;//定义一个最高行，tip：这里的最高指的是y值的最小
 //Get_image(mt9v03x_image);
 //turn_to_bin();
 /*提取赛道边界*/
-//image_filter(bin_image);//滤波
+image_filter(bin_image);//滤波
 image_draw_rectan(bin_image);//预处理
 
 //对图像的补线应该在这里，二值化处理后，八邻域之前

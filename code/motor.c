@@ -29,7 +29,7 @@ PWM_Output PWM;
 Turn_ct Turn;
 int16 bl_duty=0;
 
-int16 maxspeed=6000;
+int16 maxspeed=6500;
 int16 max_angle=200;
 
 
@@ -43,7 +43,7 @@ void Para_init()
     bl_duty=500;//无刷电机调速
     PWM.Left_Out=0;
     PWM.Right_Out=0;
-    Speed.Set_Speed=3300;
+    Speed.Set_Speed=3500;
     //Speed.Speed_Max=4000;
 
     Speed.Speed_Now=0;
@@ -79,7 +79,7 @@ void Para_init()
 
     Turn.P=1.3;
     Turn.I=0.8;
-    Turn.D=5;
+    Turn.D=2;
 }
 //编码器速度获取与处理
 //测速轮直径-3.3cm
@@ -90,7 +90,7 @@ void GetSpeed()
     {
         rd.state2_time+=encoder_data_quaddec;
     }
-    Speed.Speed_Now=encoder_data_quaddec*40;
+    Speed.Speed_Now=encoder_data_quaddec*32;
     encoder_clear_count(ENCODER_QUADDEC);                                       // 清空编码器计数
     Speed.Speed_Car=0.9*Speed.Speed_Now+0.1*Speed.Speed_Old;        //减小抖动
     Speed.Speed_Old=Speed.Speed_Now;
@@ -112,10 +112,10 @@ void SpeedPID_Control()
     Speed.D_Error=Speed.Error-Speed.L_Error;                            //微分环节
 
     Speed.Output_PWM=Speed.P*Speed.P_Error+Speed.I*Speed.I_Error+Speed.D*Speed.D_Error;
-    if(Speed.Output_PWM>4000)
-        Speed.Output_PWM=4000;
-    else if(Speed.Output_PWM<-4000)
-        Speed.Output_PWM=-4000;
+    if(Speed.Output_PWM>4500)
+        Speed.Output_PWM=4500;
+    else if(Speed.Output_PWM<-4500)
+        Speed.Output_PWM=-4500;
 
 }
 //转向环pd
@@ -201,8 +201,8 @@ void PWM_Out()
 void PWM_Out()
 {
     //速度环输出
-    Turn.PWM_Lout=Speed.Output_PWM*(1-Turn.PWM_Dout/max_angle);
-    Turn.PWM_Rout=Speed.Output_PWM*(1+Turn.PWM_Dout/max_angle)+900;
+    Turn.PWM_Lout=Speed.Output_PWM*(1-Turn.PWM_Dout/max_angle)-1000;
+    Turn.PWM_Rout=Speed.Output_PWM*(1+Turn.PWM_Dout/max_angle);
 
     if(Turn.PWM_Lout>maxspeed)
         Turn.PWM_Lout=maxspeed;
