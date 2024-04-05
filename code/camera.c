@@ -53,11 +53,16 @@ const uint8 Weight[MT9V03X_H]=
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端00 ——09 行权重
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1,              //图像最远端10 ——19 行权重
         1, 1, 1, 1, 1, 1, 1, 1, 1, 1,       //图像最远端20 ——29 行权重
-        1, 1, 1, 1, 1, 1, 1, 3, 4, 5,                 //图像最远端30 ——39 行权重
-        6, 7, 9,11,13,15,17,19,20,20,            //图像最远端40 ——49 行权重
-        19,17,15,13,11, 9, 7, 5, 3, 1,          //图像最远端50 ——59 行权重
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,            //图像最远端60 ——69 行权重
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,       //70-79
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,                 //图像最远端30 ——39 行权重
+        1, 1, 1, 1, 1, 1, 1, 3, 4, 5,            //图像最远端40 ——49 行权重
+        6, 7, 9,11,13,15,17,19,20,20,         //图像最远端50 ——59 行权重
+        20, 20, 20,20,20,20,20,20,20,20,             //图像最远端60 ——69 行权重
+        19,17,15,13,11, 9, 7, 5, 3, 1,      //70-79
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+
+
+
 
 
 
@@ -171,7 +176,7 @@ int Ring_Start_Test()
         abs(rd.Left_Lost_Time-rd.Right_Lost_Time)>20&&
         (rd.Left_Lost_Time+rd.Right_Lost_Time)<190&&
         Continuity_Change_Right(115,41)==0&&Continuity_Change_Left(115,41)!=0&&
-        Monotonicity_Change_Left(100,30)!=0&&Monotonicity_Change_Right(100,30)==0&&
+        Monotonicity_Change_Left(80,30)!=0&&Monotonicity_Change_Right(80,30)==0&&
         Find_Left_Down_Point(115,50)
         )
     {
@@ -180,8 +185,8 @@ int Ring_Start_Test()
     else if(rd.Left_Lost_Time<rd.Right_Lost_Time&&
             abs(rd.Left_Lost_Time-rd.Right_Lost_Time)>25&&
             (rd.Left_Lost_Time+rd.Right_Lost_Time)<190&&
-            Continuity_Change_Right(115,41)!=0&&Continuity_Change_Left(115,41)==0&&
-            Monotonicity_Change_Left(100,30)==0&&Monotonicity_Change_Right(100,30)!=0&&
+            Continuity_Change_Right(115,31)!=0&&Continuity_Change_Left(115,31)==0&&
+            Monotonicity_Change_Left(80,30)==0&&Monotonicity_Change_Right(80,30)!=0&&
             Find_Right_Down_Point(115,50)
             )
         {
@@ -256,9 +261,10 @@ void Add_line_from_right()
     uint8 i=0;
     for(i=0;i<120;i++)
     {
-        l_border[i]=r_border[i]-Standard_Road_Wide[i];
-        if(l_border[i]<2)
-            l_border[i]=2;
+        if(l_border[i]<4&&r_border[i]<183)
+            l_border[i]=r_border[i]-Standard_Road_Wide[i];
+        if(l_border[i]<3)
+            l_border[i]=3;
     }
 }
 void Jump_Ring()
@@ -270,22 +276,23 @@ void Left_Ring()
 {
     //rd.state=1;
     float k=0;
+    uint8 k_flag=0;
     if(rd.state==1)
             {
                 monotonicity_change_line[0]=Monotonicity_Change_Left(30,5);//寻找单调性改变点
                 monotonicity_change_line[1]=l_border[monotonicity_change_line[0]];
                 Left_Add_Line((int)(monotonicity_change_line[1]*0.15),MT9V03X_H-1,monotonicity_change_line[1],monotonicity_change_line[0]);
-                if((rd.state==1)&&(rd.L_Edgepoint_y<=50))//下方当丢线时候进2
+                if((rd.state==1)&&(rd.L_Edgepoint_y<=60))//下方当丢线时候进2
                 {
                     rd.state=2;
                 }
             }
     else if(rd.state==2)//下方角点消失，2状态时下方应该是丢线，上面是弧线
             {
-                monotonicity_change_line[0]=Monotonicity_Change_Left(70,10);//寻找单调性改变点
+                monotonicity_change_line[0]=Monotonicity_Change_Left(100,20);//寻找单调性改变点
                 monotonicity_change_line[1]=l_border[monotonicity_change_line[0]];
                 Left_Add_Line((int)(monotonicity_change_line[1]*0.1),MT9V03X_H-1,monotonicity_change_line[1],monotonicity_change_line[0]);
-                if(rd.state==2&&(rd.L_Edgepoint_y>=MT9V03X_H-5||monotonicity_change_line[0]>50))//当圆弧靠下时候，进3
+                if(rd.state==2&&(rd.L_Edgepoint_y>=MT9V03X_H-9||monotonicity_change_line[0]>65))//当圆弧靠下时候，进3
                 {
                     rd.state=3;//最长白列寻找范围也要改，见camera.c
                     //Left_Island_Flag=0;
@@ -295,12 +302,15 @@ void Left_Ring()
             {
                 if(k!=0)
                 {
-                    K_Draw_Line(k,MT9V03X_W-30,MT9V03X_H-1,0);//k是刚刚算出来的，静态变量存着
+                    if(k<1.4)
+                        k=1.4;
+                    K_Draw_Line(k,MT9V03X_W-10,MT9V03X_H-1,0);//k是刚刚算出来的，静态变量存着
                     image_process();//刷新边界数据
+
                 }
                 else
                 {
-                    Left_Up_Guai[0]=Find_Left_Up_Point(40,5);//找左上拐点
+                    Left_Up_Guai[0]=Find_Left_Up_Point(85,20);//找左上拐点
                     Left_Up_Guai[1]=l_border[Left_Up_Guai[0]];
                     /*if (Left_Up_Guai[0]<5)//这里改过啊!!!!
                     {
@@ -317,7 +327,7 @@ void Left_Ring()
                         image_process();//刷新边界数据
                     }
                 }
-                if((rd.state==3)&&(abs(FJ_Angle)>=60))//暂时使用编码器计数来转换状态，后续考虑换陀螺仪
+                if((rd.state==3)&&(abs(FJ_Angle)>=75))//暂时使用编码器计数来转换状态，后续考虑换陀螺仪
                 {
                           k=0;//斜率清零
                           encoder_derdate=0;
@@ -327,11 +337,11 @@ void Left_Ring()
             }
     else if(rd.state==4)//状态4已经在里面
      {
-        if(abs(FJ_Angle)>200)//积分200度以后在打开出环判断
+        if(abs(FJ_Angle)>240)//积分200度以后在打开出环判断
         {
                     monotonicity_change_line[0]=Monotonicity_Change_Right(MT9V03X_H-10,10);//单调性改变
                     monotonicity_change_line[1]=r_border[monotonicity_change_line[0]];
-                    if((rd.state==4)&&(35<=monotonicity_change_line[0]&&monotonicity_change_line[0]<=55&&monotonicity_change_line[1]>=10))//单调点靠下，进去5
+                    if((rd.state==4)&&(65<=monotonicity_change_line[0]&&monotonicity_change_line[0]<=105&&monotonicity_change_line[1]>=90))//单调点靠下，进去5
                     {//monotonicity_change_line[1]>=90&&
                         island_state_5_down[0]=MT9V03X_H-1;
                         island_state_5_down[1]=r_border[MT9V03X_H-1];
@@ -343,23 +353,36 @@ void Left_Ring()
      }
      else if(rd.state==5)//出环
             {
+             if(k==0&&k_flag==0){
+                     monotonicity_change_line[0]=Monotonicity_Change_Left(115,30);//单调性改变
+                     monotonicity_change_line[1]=l_border[monotonicity_change_line[0]];
+                     k=(float)((float)(MT9V03X_H-monotonicity_change_line[0])/(float)(island_state_5_down[1]-monotonicity_change_line[1]));
+                     k_flag=1;
+
+            }
              if(k!=0){
+                 if(k<1.6)
+                      k=1.6;
+                 if(k>2.2)
+                      k=2.2;
+                 rd.add_k=k;
                 K_Add_Boundry_Right(k,island_state_5_down[1],island_state_5_down[0],0);
              }
-                if((rd.state==5)&&(rd.R_Edgepoint_y<rd.L_Edgepoint_y))//右边先丢线
+                if((rd.state==5)&&(rd.R_Edgepoint_y<rd.L_Edgepoint_y)&&(abs(FJ_Angle)>345 ))//右边先丢线
                 {
-                    rd.state=6;
+                    rd.state=7;
                 }
-                if(abs(FJ_Angle)>300)
-                {
-                    rd.state=6;
-                }
+
             }
             else if(rd.state==6)//还在出
             {
-                if(k!=0){
-                K_Add_Boundry_Right(k,island_state_5_down[1],island_state_5_down[0],0);
-                }
+
+                    //K_Add_Boundry_Right(k,island_state_5_down[1],island_state_5_down[0],0);
+
+                    //K_Draw_Line(k,island_state_5_down[1],island_state_5_down[0],0);
+                    //image_process();
+
+
                 if(((rd.state==6)&&(rd.R_Edgepoint_y>MT9V03X_H-10))||(abs(FJ_Angle)>330))//右边不丢线-陀螺仪待补充
                 {
                     k=0;
@@ -368,8 +391,9 @@ void Left_Ring()
             }
             else if(rd.state==7)//基本出去了，在寻找拐点，准备离开环岛状态
                     {
-                        Left_Up_Guai[0]=Find_Left_Up_Point(MT9V03X_H-10,0);//获取左上点坐标，坐标点合理去8
+                        Left_Up_Guai[0]=Find_Left_Up_Point(MT9V03X_H-30,10);//获取左上点坐标，坐标点合理去8
                         Left_Up_Guai[1]=l_border[Left_Up_Guai[0]];
+                       // Add_line_from_right();
                         if((rd.state==7)&&(Left_Up_Guai[1]<=100)&&(5<=Left_Up_Guai[0]&&Left_Up_Guai[0]<=MT9V03X_H-20))//注意这里，对横纵坐标都有要求
                         {
                             rd.state=8;//基本上找到拐点就去8
@@ -380,7 +404,8 @@ void Left_Ring()
                         Left_Up_Guai[0]=Find_Left_Up_Point(MT9V03X_H-1,10);//获取左上点坐标
                         Left_Up_Guai[1]=l_border[Left_Up_Guai[0]];
                         Lengthen_Left_Boundry(Left_Up_Guai[0]-1,MT9V03X_H-1);
-                        if((rd.state==8)&&(Left_Up_Guai[0]>=MT9V03X_H-20||(Left_Up_Guai[0]<10&&rd.L_Edgepoint_y>=MT9V03X_H-10)))//当拐点靠下时候，认为出环了，环岛结束
+                        //Add_line_from_right();
+                        if((abs(FJ_Angle)>355)&&(rd.state==8)&&(Left_Up_Guai[0]>=MT9V03X_H-10||(Left_Up_Guai[0]<10&&rd.L_Edgepoint_y>=MT9V03X_H-10)))//当拐点靠下时候，认为出环了，环岛结束
                         {//要么拐点靠下，要么拐点丢了，切下方不丢线，认为环岛结束了
                             //FJ_Angle=0;//数据清零
                             rd.state=9;//8时候环岛基本结束了，为了防止连续判环，8后会进9，大概几十毫秒后归零，
@@ -389,7 +414,8 @@ void Left_Ring()
                     }
                     else if(rd.state==9)
                         {
-                            if(rd.Ring_Leave_time>=1000)
+                        Add_line_from_right();
+                            if(rd.Ring_Leave_time>=3000)
                             {
                                 rd.state=0;
                                 rd.Ring_Flag=0;
@@ -410,20 +436,20 @@ void Right_Ring()
         monotonicity_change_line[0]=Monotonicity_Change_Right(30,5);//单调性改变
         monotonicity_change_line[1]=r_border[monotonicity_change_line[0]];
         Right_Add_Line((int)(MT9V03X_W-1-(monotonicity_change_line[1]*0.15)),MT9V03X_H-1,monotonicity_change_line[1],monotonicity_change_line[0]);
-        if(rd.R_Edgepoint_y<=60)//右下角先丢线
+        if(rd.R_Edgepoint_y<=70)//右下角先丢线
         {
               rd.state=2;
         }
     }
     else if(rd.state==2)//2状态下方丢线，上方即将出现大弧线
     {
-        monotonicity_change_line[0]=Monotonicity_Change_Right(90,30);//单调性改变
+        monotonicity_change_line[0]=Monotonicity_Change_Right(100,30);//单调性改变
         monotonicity_change_line[1]=r_border[monotonicity_change_line[0]];
         //Draw_Line((int)(MT9V03X_W-1-(monotonicity_change_line[1]*k)),MT9V03X_H-1,monotonicity_change_line[1],monotonicity_change_line[0]);
         //image_process();
         Right_Add_Line((int)(MT9V03X_W-1-(monotonicity_change_line[1]*k)),MT9V03X_H-1,monotonicity_change_line[1],monotonicity_change_line[0]);
 //            if(rd.state==2&&(Boundry_Start_Right>=MT9V03X_H-10))//右下角再不丢线进3
-        if(rd.state==2&&monotonicity_change_line[0]>65&&rd.R_Edgepoint_x<169&&rd.state2_time>20000)//右下角再不丢线进3
+        if(rd.state==2&&monotonicity_change_line[0]>80&&rd.R_Edgepoint_x<175)//右下角再不丢线进3
         {
             rd.state=3;//下方丢线，说明大弧线已经下来了
             k=0;
@@ -433,8 +459,8 @@ void Right_Ring()
          {
              if(k!=0)//已经找到点了，画一条死线
              {
-                 if(k<-1.3)
-                     k=-1.3;
+                 if(k>-1.5)
+                     k=-1.5;
                  K_Draw_Line(k,20,MT9V03X_H-1,0);
                  image_process();//重新扫线
              }
@@ -493,8 +519,8 @@ void Right_Ring()
             rd.add_k=k;
             if(k>0)
                 k=0;
-            if(k>-1.3)
-                k=-1.3;
+            if(k>-1.4)
+                k=-1.4;
             if(k<-2.2)
                 k=-2.2;
          K_Add_Boundry_Left(k,island_state_5_down[1],island_state_5_down[0],0);
@@ -523,12 +549,20 @@ void Right_Ring()
                 /*if(abs(FJ_Angle)<330){
                     K_Add_Boundry_Left(k,island_state_5_down[1],island_state_5_down[0],0);
                 }*/
+        /*
               Right_Up_Guai[0]=Find_Right_Up_Point(MT9V03X_H-30,20);//获取左上点坐标，找到了去8
               rd.right_up_guai=Right_Up_Guai[0];
               Right_Up_Guai[1]=r_border[Right_Up_Guai[0]];
               if((rd.state==7)&&((Right_Up_Guai[1]>=MT9V03X_W-58&&(5<=Right_Up_Guai[0]&&Right_Up_Guai[0]<=MT9V03X_H-20))))//注意这里，对横纵坐标都有要求，因为赛道不一样，会意外出现拐点
               {//当角点位置合理时，进8
                   rd.state=8;
+              }
+              */
+            Add_line_from_left();
+            if(abs(FJ_Angle)>75){
+                   rd.state=9;
+                   rd.Ring_Flag=0;
+                   FJ_Angle=0;
               }
           }
     else if(rd.state==8)//环岛8
@@ -1277,6 +1311,8 @@ void Draw_Line(int startX, int startY, int endX, int endY)
                 x=1;
             bin_image[i][x] = black_pixel;
             bin_image[i][x-1] = black_pixel;
+            bin_image[i][x-2] = black_pixel;
+
         }
         if(startX>endX)
         {

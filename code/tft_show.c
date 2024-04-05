@@ -124,11 +124,11 @@ void Display_Grayscale_Image(void)
 
    //tft180_show_gray_image(0,0,mt9v03x_image[0],image_w,image_h,160,128,0);
    tft180_show_gray_image(0,0,bin_image[0],image_w,image_h,160,128,0);
-    tft180_show_int(0,0,rd.state,4);
-                tft180_show_int(0,16,rd.state2_time,5);
-                tft180_show_int(0,16*2,rd.L_Edgepoint_y,4);
-                //tft180_show_int(0,16*3,rd.add_k,4);
-                tft180_show_float(0,16*3,rd.add_k,2,3);
+    tft180_show_int(0,0,Turn.PWM_Dout,4);
+                tft180_show_int(0,16,Turn.PWM_Lout,4);
+                tft180_show_int(0,16*2,Turn.PWM_Rout,4);
+                tft180_show_int(0,16*3,max_row,4);
+                //tft180_show_float(0,16*3,rd.add_k,2,3);
                 tft180_show_int(0,16*4,FJ_Angle,4);
     for (int16 i = 0; i <image_h-1; i++)
        {
@@ -163,11 +163,14 @@ void Display_Initial_Menu()
 
     tft180_show_string ( 0,  16*0, "1.Grayscale Image");
 
-    tft180_show_string ( 0,  16*1, "2.Speed.P");
-    tft180_show_string ( 0,  16*2, "3.Speed.I");
-    tft180_show_string ( 0,  16*3, "4.Speed.D");
-    tft180_show_string ( 0,  16*4, "5.Turn.P");
-    tft180_show_string ( 0,  16*5, "6.Turn.D");
+    tft180_show_string ( 0,  16*1, "2.Turn.P");
+    tft180_show_string ( 0,  16*2, "3.Turn.I");
+    tft180_show_string ( 0,  16*3, "4.Turn.D");
+    tft180_show_string ( 0,  16*4, "5.Speed.P");
+//    tft180_show_string ( 0,  16*5, "6.Speed.I");
+//没位置显示I了，但还在的
+//这个乱码什么玩意，只能晚点总结的时候一点点粘了
+    tft180_show_string ( 0,  16*5, "7.Speed.D");
     tft180_show_int (0, 16*6,  encoder_data_quaddec,4);
 //���� ��ʾ���ֺ���ʾ�ַ�����ʲô��������������ܲ�֧��ֱ����ʾ��ASCII�ַ������纺�ֵ�
 }
@@ -188,7 +191,17 @@ ps�����ʽ��������������أ������
 
 
 
-
+void Adjust_TurnI(void) {
+    if (KEY_SHORT_PRESS == key_get_state(KEY_1)) {
+        Turn.I += 0.1;
+    }
+    else if (KEY_SHORT_PRESS == key_get_state(KEY_2)) {
+        Turn.I -= 0.1;
+        if (Turn.I < 0) Turn.I = 0;
+    }
+    tft180_show_string ( 0,  16*0, "5.Turn_I");
+    tft180_show_float(0, 16*2, Turn.I, 1, 6);
+}
 void Adjust_SpeedP(void) {
     if (KEY_SHORT_PRESS == key_get_state(KEY_1)) {
         Speed.P += 0.1; // ���Ӳ���Ϊ0.1
@@ -293,39 +306,46 @@ void Display_Second_Menu(uint8_t *List_Number_p){
             else if(*List_Number_p==2)
             {
                 //��ʵ�ֵĹ���
-                Adjust_SpeedP();
+                Adjust_TurnP();
                 // ����ⲿ�жϴ�����־λ
                 exti_state[3] = 0;
             }
             else if(*List_Number_p==3)
             {
                 //��ʵ�ֵĹ���
-                Adjust_SpeedI();
+                Adjust_TurnI();
                 // ����ⲿ�жϴ�����־λ
                 exti_state[3] = 0;
             }
             else if(*List_Number_p==4)
             {
                 //��ʵ�ֵĹ���
-                Adjust_SpeedD();
+                Adjust_TurnD();
                 // ����ⲿ�жϴ�����־λ
                 exti_state[3] = 0;
             }
             else if(*List_Number_p==5)
             {
                 //��ʵ�ֵĹ���
-                Adjust_TurnP();
+                Adjust_SpeedP();
                 // ����ⲿ�жϴ�����־λ
                 exti_state[3] = 0;
             }
             else if(*List_Number_p==6)
             {
                 //��ʵ�ֵĹ���
-                Adjust_TurnD();
+                Adjust_SpeedI();
                 // ����ⲿ�жϴ�����־λ
                 exti_state[3] = 0;
             }
             else if(*List_Number_p==7)
+            {
+                //��ʵ�ֵĹ���
+                Adjust_SpeedD();
+                // ����ⲿ�жϴ�����־λ
+                exti_state[3] = 0;
+            }
+            else if(*List_Number_p==8)
             {
                 //��ʵ�ֵĹ���
                 Adjust_max_angle();
@@ -335,5 +355,4 @@ void Display_Second_Menu(uint8_t *List_Number_p){
             //��һ��key3�ж�״̬
             exti_state[2] = 0;
 }
-
 

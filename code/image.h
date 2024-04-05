@@ -28,6 +28,7 @@ extern uint8 bin_image[image_h][image_w];//图像数组
 
 extern void turn_to_bin();
 extern void image_process(void); //直接在中断或循环里调用此程序就可以循环执行了
+extern int findMaxTransitionFromWhiteToBlack(int cols, int colf);
 
 extern void GetCenterline();
 #endif /*_IMAGE_H*/

@@ -318,6 +318,11 @@ void TIM3_IRQHandler(void)
                   gpio_toggle_level(E2);
 
               }
+               if(ms%2==0)
+              {
+                    TurnPD_Control();
+                    PWM_Out();
+              }
               if((rd.Ring_Flag!=0)&&b_s==0)
               {
                   gpio_set_level(BEEP, GPIO_HIGH);
@@ -334,6 +339,18 @@ void TIM3_IRQHandler(void)
                    {
                        EndTime++;
                    }
+
+              }
+              if(ms%100==0)
+              {
+                  max_row=findMaxTransitionFromWhiteToBlack(20, 160);
+                  if(max_row>=110&&rd.L_Edgepoint_y>70&&rd.R_Edgepoint_y>70&&-5<Turn.Chazhi&&Turn.Chazhi<5){
+                              Speed.Set_Speed=Speed.zhidao_Speed;
+                  }
+                  else  {
+                              Speed.Set_Speed=Speed.wandao_Speed;
+                  }
+
 
               }
               if(b_s>=3)
@@ -397,11 +414,7 @@ void TIM3_IRQHandler(void)
                   //Speed.Output_PWM=2100;
                   SpeedPID_Control();
               }
-              if(ms%2==0)
-              {
-                  TurnPD_Control();
-                  PWM_Out();
-              }
+
 
               if(rd.state==9)
                   rd.Ring_Leave_time++;
