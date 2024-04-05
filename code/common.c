@@ -40,6 +40,7 @@ int16 EndTime=0;
 int16 encoder_data_quaddec = 0;
 int16 encoder_derdate=0;
 int16 Ring_Count=0;
+int16 max_row=0;
 
 void All_Init()
 {

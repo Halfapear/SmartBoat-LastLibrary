@@ -7,4 +7,5 @@ extern int16 b_s;
 extern int16 EndTime;
 extern int16 Ring_Count;
 extern int16 encoder_derdate;
+extern int16 max_row;
 

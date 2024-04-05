@@ -165,6 +165,14 @@ int main (void)
          crosswalk();
          GetCenterline();
          Turn.Chazhi=Err_Sum();
+         if(Turn.Chazhi>18||Turn.Chazhi<-18)
+           {
+                 Speed.Set_Speed=Speed.wandao_Speed;
+            }
+           else
+           {
+                 Speed.Set_Speed=Speed.zhidao_Speed;
+           }
 
          if(garageout_flag==1)
              stop();

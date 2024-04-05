@@ -620,7 +620,24 @@ void GetCenterline()
         }
 }
 
-
+int findMaxTransitionFromWhiteToBlack(int cols, int colf) {
+    int maxY = 117; // 用于记录最大的y值，初始化为-1表示还没找到
+    // 遍历指定的列范围
+    for (int col = cols; col <= colf; col+=3) {
+        for (int row = image_h-1; row >3; row--) {
+            // 检查当前像素是不是白色，并且下一个像素是黑色
+            if (bin_image[row][col] == white_pixel &&bin_image[row+1][col]==white_pixel&&
+                bin_image[row - 1][col] == black_pixel&&bin_image[row-2][col]==black_pixel) {
+                // 发现白到黑的变化，更新maxY
+                if (row < maxY) {
+                    maxY = row; // 更新最大的y值
+                }
+                break; // 找到第一个变化后就停止搜索当前列
+            }
+        }
+    }
+    return image_h-maxY; // 返回找到的最大y值
+}
 
 /*
 

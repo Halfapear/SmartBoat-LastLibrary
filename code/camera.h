@@ -30,6 +30,8 @@ typedef struct
     uint16 state2_time;
 }Round;
 
+extern int16 island_state_5_down[2];
+extern int16 island_state_3_up[2];
 
 extern uint8 Cross_Flag;
 extern int16 LUJ;
