@@ -43,9 +43,9 @@ void Para_init()
     bl_duty=500;//无刷电机调速
     PWM.Left_Out=0;
     PWM.Right_Out=0;
-    Speed.Set_Speed=4500;
-    Speed.zhidao_Speed=4500;
-    Speed.wandao_Speed=4000;
+    Speed.Set_Speed=2500;
+    Speed.zhidao_Speed=6000;
+    Speed.wandao_Speed=3000;
     //Speed.Speed_Max=4000;
 
     Speed.Speed_Now=0;
@@ -79,10 +79,11 @@ void Para_init()
     Turn.turnI=0;
     Turn.turnD=0;
 
-    Turn.P=1.2;
-    Turn.I=0.8;
-    Turn.D=4;
+    Turn.P=1.5;
+    Turn.I=0.2;
+    Turn.D=2;
 }
+
 //编码器速度获取与处理
 //测速轮直径-3.3cm
 void GetSpeed()
@@ -131,16 +132,16 @@ void TurnPD_Control()
         Turn.error=0;
     }
     Turn.intergrator+=Turn.error;
-    Turn.intergrator=constrain_float(Turn.intergrator,-40,40);
+    Turn.intergrator=constrain_float(Turn.intergrator,-60,60);
     Turn.turnP=Turn.P*Turn.error;
     Turn.turnD=Turn.D*(Turn.error-Turn.last_error);
     Turn.turnI=Turn.intergrator*Turn.I;
     Turn.PWM_Dout=Turn.P*Turn.error+Turn.intergrator*Turn.I+Turn.D*(Turn.error-Turn.last_error);
     Turn.last_error = Turn.error;
-    if(Turn.PWM_Dout>90)
-        Turn.PWM_Dout=90;
-    else if(Turn.PWM_Dout<-90)
-        Turn.PWM_Dout=-90;
+    if(Turn.PWM_Dout>150)
+        Turn.PWM_Dout=150;
+    else if(Turn.PWM_Dout<-150)
+        Turn.PWM_Dout=-150;
 
 
 }

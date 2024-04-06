@@ -162,10 +162,14 @@ int main (void)
          //Find_Up_Point( MT9V03X_H-1, 10 );
          //Find_Down_Point(MT9V03X_H-5,40);
          Cross_Detect();
+         if(s>20){
          crosswalk();
+         }
+
          GetCenterline();
          Turn.Chazhi=Err_Sum();
-         if(Turn.Chazhi>18||Turn.Chazhi<-18)
+//         if(Turn.Chazhi>18||Turn.Chazhi<-18)
+         if(straight==0)
            {
                  Speed.Set_Speed=Speed.wandao_Speed;
             }
