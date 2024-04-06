@@ -30,7 +30,7 @@ Turn_ct Turn;
 int16 bl_duty=0;
 
 int16 maxspeed=6500;
-int16 max_angle=150;
+int16 max_angle=170;
 
 
 int16 zhuanjiaozhi=0;
@@ -43,9 +43,9 @@ void Para_init()
     bl_duty=500;//无刷电机调速
     PWM.Left_Out=0;
     PWM.Right_Out=0;
-    Speed.Set_Speed=3500;
-    Speed.zhidao_Speed=4000;
-    Speed.wandao_Speed=3000;
+    Speed.Set_Speed=3800;
+    Speed.zhidao_Speed=3800;
+    Speed.wandao_Speed=3800;
     //Speed.Speed_Max=4000;
 
     Speed.Speed_Now=0;
@@ -79,9 +79,9 @@ void Para_init()
     Turn.turnI=0;
     Turn.turnD=0;
 
-    Turn.P=1.2;
-    Turn.I=0.3;
-    Turn.D=2;
+    Turn.P=3.5;
+    Turn.I=0.1;
+    Turn.D=4;
 }
 //编码器速度获取与处理
 //测速轮直径-3.3cm
@@ -106,7 +106,6 @@ float constrain_float(float amt, float low, float high)
 //速度环pid
 void SpeedPID_Control()
 {
-
     Speed.Error=(Speed.Set_Speed-Speed.Speed_Car);
     Speed.Integral+=Speed.Error;
     Speed.Integral=constrain_float(Speed.Integral,-300,300);
@@ -119,7 +118,6 @@ void SpeedPID_Control()
         Speed.Output_PWM=5500;
     else if(Speed.Output_PWM<-5500)
         Speed.Output_PWM=-5500;
-
 }
 //转向环pd
 void TurnPD_Control()
@@ -137,11 +135,10 @@ void TurnPD_Control()
     Turn.turnI=Turn.intergrator*Turn.I;
     Turn.PWM_Dout=Turn.P*Turn.error+Turn.intergrator*Turn.I+Turn.D*(Turn.error-Turn.last_error);
     Turn.last_error = Turn.error;
-    if(Turn.PWM_Dout>150)
-        Turn.PWM_Dout=150;
-    else if(Turn.PWM_Dout<-150)
-        Turn.PWM_Dout=-150;
-
+    if(Turn.PWM_Dout>75)
+        Turn.PWM_Dout=75;
+    else if(Turn.PWM_Dout<-75)
+        Turn.PWM_Dout=-75;
 
 }
 //设置无刷电机的转速，duty范围500-1000
@@ -189,7 +186,7 @@ void set_brushless_duty(int16 duty)
 //            gpio_set_level(DIR_R2, GPIO_LOW);
 //            pwm_set_duty(PWM_R2,Turn.PWM_Rout);
 //            gpio_set_level(DIR_L1, GPIO_LOW);
-//            pwm_set_duty(PWM_L1,Turn.PWM_Rout*0.4);
+//            pwm_set_duty(PWM_L1,Turn.PWM_Rout*0.);
 //        }
 //        else {
 //            gpio_set_level(DIR_R2, GPIO_HIGH);
@@ -204,7 +201,7 @@ void set_brushless_duty(int16 duty)
 void PWM_Out()
 {
     //速度环输出
-    Turn.PWM_Lout=Speed.Output_PWM*(1-Turn.PWM_Dout/max_angle);
+    Turn.PWM_Lout=Speed.Output_PWM*(1-Turn.PWM_Dout/max_angle)-1000;
     Turn.PWM_Rout=Speed.Output_PWM*(1+Turn.PWM_Dout/max_angle);
 
     if(Turn.PWM_Lout>maxspeed)
@@ -255,6 +252,7 @@ void PWM_Out()
 
 
 }
+
 void stop(){
     if(EndTime==0)
         EndTime=1;

@@ -45,7 +45,7 @@
 #define PIT_CH                  (TIM3_PIT)                                      // 使用的周期中断编号 如果修改 需要同步对应修改周期中断编号与 isr.c 中的调用
 #define PIT_PRIORITY            (TIM3_IRQn)                                      // 对应周期中断的中断编号
 #define RING                  (0)
-#define TFT                     (1)
+#define TFT                     (0)
 #define WIRELESS        (0)
 //#define SPI                 (0)
 uint8 count = 0;
@@ -70,14 +70,14 @@ int main (void)
     uint8_t List_Number=1;
     //    * List_Number_p=&List_Number;
     List_Number_p=&List_Number;
-#if TFT
-    tft180_set_dir(TFT180_CROSSWISE);
-    tft180_set_color(RGB565_RED, RGB565_BLACK);
-    tft180_init();
-#endif
-    uint8_t Menu_List=10;
-    key_init (5);
-    exti_initconfig ();
+//#if TFT
+//    tft180_set_dir(TFT180_CROSSWISE);
+//    tft180_set_color(RGB565_RED, RGB565_BLACK);
+//    tft180_init();
+//#endif
+//    uint8_t Menu_List=10;
+//    key_init (5);
+//    exti_initconfig ();
 
     while(1)
     {
@@ -166,28 +166,38 @@ int main (void)
          Cross_Detect();
          if(s>20)
              crosswalk();
-         if(s<28&&s>12&&r_border[80]>100)
+         if(s>14&&s<30&&r_border[80]>100)
              Add_line_from_right();
-         if(s<16){
-             Turn.P=3.5;
-             //Turn.I=0.35;
-             Speed.Set_Speed=2800;
-             Speed.wandao_Speed=2800;
-             Speed.zhidao_Speed=2800;
-             max_angle=110;
-             //Turn.D=3;
-         }
-         else
-         {
-             //Speed.Set_Speed=3500;
-             Speed.Set_Speed=2800;
-             Speed.wandao_Speed=3500;
-             Speed.zhidao_Speed=3500;
-             max_angle=200;
-             Turn.P=1.2;
-                 Turn.I=0.2;
-                 Turn.D=2;
-         }
+
+         //参数都在这里调
+
+         max_row=findMaxTransitionFromWhiteToBlack(40, 120);
+           if(max_row>=90&&rd.Ring_Flag==0&&Cross_Flag==0){
+                          Speed.Set_Speed=Speed.zhidao_Speed;
+             }
+             else  {
+                          Speed.Set_Speed=Speed.wandao_Speed;
+             }
+//         if(s<0){
+//             Turn.P=3.5;
+//             //Turn.I=0.35;
+//             Speed.Set_Speed=2800;
+//             Speed.wandao_Speed=2800;
+//             Speed.zhidao_Speed=2800;
+//             max_angle=110;
+//             //Turn.D=3;
+//         }
+//         else
+//         {
+//             //Speed.Set_Speed=3500;
+//             Speed.Set_Speed=2800;
+//             Speed.wandao_Speed=3500;
+//             Speed.zhidao_Speed=3500;
+//             max_angle=200;
+//             Turn.P=1.2;
+//                 Turn.I=0.2;
+//                 Turn.D=2;
+//         }
          GetCenterline();
          Turn.Chazhi=Err_Sum();
          /*if(Turn.Chazhi>18||Turn.Chazhi<-18)
@@ -198,6 +208,14 @@ int main (void)
            {
                  Speed.Set_Speed=Speed.zhidao_Speed;
            }*/
+//         if(straight==0)
+//           {
+//                 Speed.Set_Speed=Speed.wandao_Speed;
+//            }
+//           else
+//           {
+//                 Speed.Set_Speed=Speed.zhidao_Speed;
+//           }
 
          if(garageout_flag==1)
              stop();
