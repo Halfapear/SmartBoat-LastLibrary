@@ -4,8 +4,6 @@
 //------------------------------------------------------------------------------------------------------------------
 #include "image.h"
 
-int16 straight=1;
-
 /*
 函数名称：int my_abs(int value)
 功能说明：求绝对值
@@ -622,7 +620,7 @@ void GetCenterline()
         }
 }
 
-int16 findMaxTransitionFromWhiteToBlack(int cols, int colf) {
+int findMaxTransitionFromWhiteToBlack(int cols, int colf) {
     int maxY = 117; // 用于记录最大的y值，初始化为-1表示还没找到
     // 遍历指定的列范围
     for (int col = cols; col <= colf; col+=3) {
