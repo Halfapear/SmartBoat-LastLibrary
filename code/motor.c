@@ -30,7 +30,7 @@ Turn_ct Turn;
 int16 bl_duty=0;
 
 int16 maxspeed=6500;
-int16 max_angle=200;
+int16 max_angle=120;
 
 
 int16 zhuanjiaozhi=0;
@@ -43,9 +43,9 @@ void Para_init()
     bl_duty=500;//无刷电机调速
     PWM.Left_Out=0;
     PWM.Right_Out=0;
-    Speed.Set_Speed=3500;
-    Speed.zhidao_Speed=4000;
-    Speed.wandao_Speed=4000;
+    Speed.Set_Speed=3000;
+    Speed.zhidao_Speed=3000;
+    Speed.wandao_Speed=3000;
     //Speed.Speed_Max=4000;
 
     Speed.Speed_Now=0;
@@ -79,7 +79,7 @@ void Para_init()
     Turn.turnI=0;
     Turn.turnD=0;
 
-    Turn.P=1.2;
+    Turn.P=4;
     Turn.I=0.3;
     Turn.D=2;
 }
