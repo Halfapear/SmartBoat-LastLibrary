@@ -125,7 +125,7 @@ void Display_Grayscale_Image(void)
    //tft180_show_gray_image(0,0,mt9v03x_image[0],image_w,image_h,160,128,0);
    tft180_show_gray_image(0,0,bin_image[0],image_w,image_h,160,128,0);
     tft180_show_int(0,0,Turn.PWM_Dout,4);
-                tft180_show_int(0,16,Turn.PWM_Lout,4);
+                tft180_show_int(0,16,Turn.Chazhi,4);
                 tft180_show_int(0,16*2,Turn.PWM_Rout,4);
                 tft180_show_int(0,16*3,max_row,4);
                 //tft180_show_float(0,16*3,rd.add_k,2,3);

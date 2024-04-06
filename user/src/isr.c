@@ -343,13 +343,13 @@ void TIM3_IRQHandler(void)
               }
               if(ms%100==0)
               {
-                  max_row=findMaxTransitionFromWhiteToBlack(20, 160);
-                  if(max_row>=110&&rd.L_Edgepoint_y>70&&rd.R_Edgepoint_y>70&&-5<Turn.Chazhi&&Turn.Chazhi<5){
-                              Speed.Set_Speed=Speed.zhidao_Speed;
-                  }
-                  else  {
-                              Speed.Set_Speed=Speed.wandao_Speed;
-                  }
+                  max_row=findMaxTransitionFromWhiteToBlack(40, 120);
+                                if(max_row>=90&&rd.Ring_Flag==0&&Cross_Flag==0){
+                                               Speed.Set_Speed=Speed.zhidao_Speed;
+                                  }
+                                  else  {
+                                               Speed.Set_Speed=Speed.wandao_Speed;
+                                   }
 
 
               }

@@ -44,12 +44,14 @@
 #define BEEP                (C13)
 #define PIT_CH                  (TIM3_PIT)                                      // 使用的周期中断编号 如果修改 需要同步对应修改周期中断编号与 isr.c 中的调用
 #define PIT_PRIORITY            (TIM3_IRQn)                                      // 对应周期中断的中断编号
-#define RING                  (1)
+#define RING                  (0)
 #define TFT                     (1)
 #define WIRELESS        (0)
 //#define SPI                 (0)
 uint8 count = 0;
-
+//斜率1.3188
+//25行长度19
+//119行长度167
 int main (void)
 {
     clock_init(SYSTEM_CLOCK_120M);      // 初始化芯片时钟 工作频率为 120MHz
@@ -134,7 +136,7 @@ int main (void)
                  Right_Ring();//写完了，但感觉跑不起来
             }
 #endif
-#if !RING
+#if 0
          if(rd.Ring_Flag==0&&Cross_Flag==0&&Ring_Count<=0){//圆环搜索
                Ring_Search();
                if(rd.Ring_Flag!=0)
@@ -162,17 +164,40 @@ int main (void)
          //Find_Up_Point( MT9V03X_H-1, 10 );
          //Find_Down_Point(MT9V03X_H-5,40);
          Cross_Detect();
-         crosswalk();
+         if(s>20)
+             crosswalk();
+         if(s<28&&s>12&&r_border[80]>100)
+             Add_line_from_right();
+         if(s<16){
+             Turn.P=3.5;
+             //Turn.I=0.35;
+             Speed.Set_Speed=2800;
+             Speed.wandao_Speed=2800;
+             Speed.zhidao_Speed=2800;
+             max_angle=110;
+             //Turn.D=3;
+         }
+         else
+         {
+             //Speed.Set_Speed=3500;
+             Speed.Set_Speed=2800;
+             Speed.wandao_Speed=3500;
+             Speed.zhidao_Speed=3500;
+             max_angle=200;
+             Turn.P=1.2;
+                 Turn.I=0.2;
+                 Turn.D=2;
+         }
          GetCenterline();
          Turn.Chazhi=Err_Sum();
-         if(Turn.Chazhi>18||Turn.Chazhi<-18)
+         /*if(Turn.Chazhi>18||Turn.Chazhi<-18)
            {
                  Speed.Set_Speed=Speed.wandao_Speed;
             }
            else
            {
                  Speed.Set_Speed=Speed.zhidao_Speed;
-           }
+           }*/
 
          if(garageout_flag==1)
              stop();
