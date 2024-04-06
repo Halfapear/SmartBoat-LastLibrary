@@ -30,7 +30,7 @@ Turn_ct Turn;
 int16 bl_duty=0;
 
 int16 maxspeed=6500;
-int16 max_angle=120;
+int16 max_angle=170;
 
 
 int16 zhuanjiaozhi=0;
@@ -43,9 +43,9 @@ void Para_init()
     bl_duty=500;//无刷电机调速
     PWM.Left_Out=0;
     PWM.Right_Out=0;
-    Speed.Set_Speed=3000;
-    Speed.zhidao_Speed=3000;
-    Speed.wandao_Speed=3000;
+    Speed.Set_Speed=4000;
+    Speed.zhidao_Speed=4000;
+    Speed.wandao_Speed=4000;
     //Speed.Speed_Max=4000;
 
     Speed.Speed_Now=0;
@@ -79,9 +79,9 @@ void Para_init()
     Turn.turnI=0;
     Turn.turnD=0;
 
-    Turn.P=4;
-    Turn.I=0.3;
-    Turn.D=2;
+    Turn.P=3;
+    Turn.I=0;
+    Turn.D=4;
 }
 //编码器速度获取与处理
 //测速轮直径-3.3cm
@@ -153,6 +153,54 @@ void set_brushless_duty(int16 duty)
     pwm_set_duty(PWM_D2, duty);
 }
 
+//void PWM_Out()
+//{
+//    //速度环输出
+//    Turn.PWM_Lout=Speed.Output_PWM*(1-Turn.PWM_Dout/max_angle)-1000;
+//    Turn.PWM_Rout=Speed.Output_PWM*(1+Turn.PWM_Dout/max_angle);
+//
+//    if(Turn.PWM_Lout>maxspeed)
+//        Turn.PWM_Lout=maxspeed;
+//    else if(Turn.PWM_Lout<-maxspeed)
+//        Turn.PWM_Lout=-maxspeed;
+//
+//    if(Turn.PWM_Rout>maxspeed)
+//            Turn.PWM_Rout=maxspeed;
+//    else if(Turn.PWM_Rout<-maxspeed)
+//            Turn.PWM_Rout=-maxspeed;
+//
+//    if(Turn.PWM_Lout>0)
+//    {
+//        gpio_set_level(DIR_L2, GPIO_LOW);
+//        pwm_set_duty(PWM_L2,Turn.PWM_Lout);
+//        gpio_set_level(DIR_R1, GPIO_LOW);
+//        pwm_set_duty(PWM_R1,Turn.PWM_Lout*0.4);
+//
+//    }
+//    else {
+//        gpio_set_level(DIR_L2, GPIO_HIGH);
+//        pwm_set_duty(PWM_L2,-Turn.PWM_Lout);
+//        gpio_set_level(DIR_R1, GPIO_HIGH);
+//        pwm_set_duty(PWM_R1,Turn.PWM_Lout*0.4);
+//    }
+//
+//    if(Turn.PWM_Rout>0)
+//        {
+//            gpio_set_level(DIR_R2, GPIO_LOW);
+//            pwm_set_duty(PWM_R2,Turn.PWM_Rout);
+//            gpio_set_level(DIR_L1, GPIO_LOW);
+//            pwm_set_duty(PWM_L1,Turn.PWM_Rout*0.4);
+//        }
+//        else {
+//            gpio_set_level(DIR_R2, GPIO_HIGH);
+//            pwm_set_duty(PWM_R2,-Turn.PWM_Rout);
+//            gpio_set_level(DIR_L1, GPIO_HIGH);
+//            pwm_set_duty(PWM_L1,Turn.PWM_Rout*0.4);
+//        }
+//
+//
+//}
+
 void PWM_Out()
 {
     //速度环输出
@@ -171,90 +219,42 @@ void PWM_Out()
 
     if(Turn.PWM_Lout>0)
     {
-        gpio_set_level(DIR_L2, GPIO_LOW);
-        pwm_set_duty(PWM_L2,Turn.PWM_Lout);
-        gpio_set_level(DIR_R1, GPIO_LOW);
-        pwm_set_duty(PWM_R1,Turn.PWM_Lout*0.4);
-
+            gpio_set_level(DIR_L2, GPIO_LOW);
+            pwm_set_duty(PWM_L2,Turn.PWM_Lout);
     }
-    else {
-        gpio_set_level(DIR_L2, GPIO_HIGH);
-        pwm_set_duty(PWM_L2,-Turn.PWM_Lout);
-        gpio_set_level(DIR_R1, GPIO_HIGH);
-        pwm_set_duty(PWM_R1,Turn.PWM_Lout*0.4);
-    }
+    else
+    {
+            gpio_set_level(DIR_L2, GPIO_HIGH);
+            pwm_set_duty(PWM_L2,-Turn.PWM_Lout);
+     }
 
     if(Turn.PWM_Rout>0)
-        {
+    {
             gpio_set_level(DIR_R2, GPIO_LOW);
             pwm_set_duty(PWM_R2,Turn.PWM_Rout);
-            gpio_set_level(DIR_L1, GPIO_LOW);
-            pwm_set_duty(PWM_L1,Turn.PWM_Rout*0.4);
-        }
-        else {
+     }
+     else
+     {
             gpio_set_level(DIR_R2, GPIO_HIGH);
             pwm_set_duty(PWM_R2,-Turn.PWM_Rout);
-            gpio_set_level(DIR_L1, GPIO_HIGH);
-            pwm_set_duty(PWM_L1,Turn.PWM_Rout*0.4);
-        }
+      }
+
+       /*if(Speed.Set_Speed==Speed.wandao_Speed)
+       {
+           if(Turn.PWM_Dout>0)
+           {
+               gpio_set_level(DIR_R1,GPIO_HIGH);
+               pwm_set_duty(PWM_R1,1000);
+           }
+           else
+           {
+               gpio_set_level(DIR_L1, GPIO_HIGH);
+               pwm_set_duty(PWM_L1,1000);
+           }
+       }*/
 
 
 }
-
-//void PWM_Out()
-//{
-//    //速度环输出
-//    Turn.PWM_Lout=Speed.Output_PWM*(1-Turn.PWM_Dout/max_angle);
-//    Turn.PWM_Rout=Speed.Output_PWM*(1+Turn.PWM_Dout/max_angle);
-//
-//    if(Turn.PWM_Lout>maxspeed)
-//        Turn.PWM_Lout=maxspeed;
-//    else if(Turn.PWM_Lout<-maxspeed)
-//        Turn.PWM_Lout=-maxspeed;
-//
-//    if(Turn.PWM_Rout>maxspeed)
-//            Turn.PWM_Rout=maxspeed;
-//    else if(Turn.PWM_Rout<-maxspeed)
-//            Turn.PWM_Rout=-maxspeed;
-//
-//    if(Turn.PWM_Lout>0)
-//    {
-//            gpio_set_level(DIR_L2, GPIO_LOW);
-//            pwm_set_duty(PWM_L2,Turn.PWM_Lout);
-//    }
-//    else
-//    {
-//            gpio_set_level(DIR_L2, GPIO_HIGH);
-//            pwm_set_duty(PWM_L2,-Turn.PWM_Lout);
-//     }
-//
-//    if(Turn.PWM_Rout>0)
-//    {
-//            gpio_set_level(DIR_R2, GPIO_LOW);
-//            pwm_set_duty(PWM_R2,Turn.PWM_Rout);
-//     }
-//     else
-//     {
-//            gpio_set_level(DIR_R2, GPIO_HIGH);
-//            pwm_set_duty(PWM_R2,-Turn.PWM_Rout);
-//      }
-//
-//       /*if(Speed.Set_Speed==Speed.wandao_Speed)
-//       {
-//           if(Turn.PWM_Dout>0)
-//           {
-//               gpio_set_level(DIR_R1,GPIO_HIGH);
-//               pwm_set_duty(PWM_R1,1000);
-//           }
-//           else
-//           {
-//               gpio_set_level(DIR_L1, GPIO_HIGH);
-//               pwm_set_duty(PWM_L1,1000);
-//           }
-//       }*/
-//
-//
-//}
 void stop(){
     if(EndTime==0)
         EndTime=1;

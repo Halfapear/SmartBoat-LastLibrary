@@ -166,7 +166,7 @@ int main (void)
          Cross_Detect();
          if(s>20)
              crosswalk();
-         if(s<28&&s>12&&r_border[80]>100)
+         if(s<20&&r_border[80]>100)
              Add_line_from_right();
 //         if(s<0){
 //             Turn.P=3.5;
@@ -198,6 +198,14 @@ int main (void)
            {
                  Speed.Set_Speed=Speed.zhidao_Speed;
            }*/
+//         if(straight==0)
+//           {
+//                 Speed.Set_Speed=Speed.wandao_Speed;
+//            }
+//           else
+//           {
+//                 Speed.Set_Speed=Speed.zhidao_Speed;
+//           }
 
          if(garageout_flag==1)
              stop();
