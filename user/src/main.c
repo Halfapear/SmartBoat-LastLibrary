@@ -70,14 +70,14 @@ int main (void)
     uint8_t List_Number=1;
     //    * List_Number_p=&List_Number;
     List_Number_p=&List_Number;
-//#if TFT
-//    tft180_set_dir(TFT180_CROSSWISE);
-//    tft180_set_color(RGB565_RED, RGB565_BLACK);
-//    tft180_init();
-//#endif
-//    uint8_t Menu_List=10;
-//    key_init (5);
-//    exti_initconfig ();
+#if TFT
+    tft180_set_dir(TFT180_CROSSWISE);
+    tft180_set_color(RGB565_RED, RGB565_BLACK);
+    tft180_init();
+#endif
+    uint8_t Menu_List=10;
+    key_init (5);
+    exti_initconfig ();
 
     while(1)
     {
@@ -164,20 +164,10 @@ int main (void)
          //Find_Up_Point( MT9V03X_H-1, 10 );
          //Find_Down_Point(MT9V03X_H-5,40);
          Cross_Detect();
-         if(s>20)
+         if(s>50)
              crosswalk();
-         if(s>14&&s<30&&r_border[80]>100)
+         if(s>11&&s<25&&r_border[80]>100)
              Add_line_from_right();
-
-         //参数都在这里调
-
-         max_row=findMaxTransitionFromWhiteToBlack(40, 120);
-           if(max_row>=90&&rd.Ring_Flag==0&&Cross_Flag==0){
-                          Speed.Set_Speed=Speed.zhidao_Speed;
-             }
-             else  {
-                          Speed.Set_Speed=Speed.wandao_Speed;
-             }
 //         if(s<0){
 //             Turn.P=3.5;
 //             //Turn.I=0.35;

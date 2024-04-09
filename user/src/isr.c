@@ -343,13 +343,15 @@ void TIM3_IRQHandler(void)
               }
               if(ms%100==0)
               {
-//                  max_row=findMaxTransitionFromWhiteToBlack(40, 120);
-//                                if(max_row>=90&&rd.Ring_Flag==0&&Cross_Flag==0){
-//                                               Speed.Set_Speed=Speed.zhidao_Speed;
-//                                  }
-//                                  else  {
-//                                               Speed.Set_Speed=Speed.wandao_Speed;
-//                                   }
+                  max_row=findMaxTransitionFromWhiteToBlack(40, 120);
+                                if(max_row>=85&&rd.Ring_Flag==0&&Cross_Flag==0&&abs(Turn.Chazhi)<10){
+                                               Speed.Set_Speed=Speed.zhidao_Speed;
+                                  }
+                                  else  {
+                                               Speed.Set_Speed=Speed.wandao_Speed;
+                                   }
+
+
               }
               if(b_s>=3)
               {
@@ -373,17 +375,17 @@ void TIM3_IRQHandler(void)
               }
               else if(s>3&&EndTime==0)
               {
-                  bl_duty=980;
+                  bl_duty=970;
               }
-              else if(EndTime<4)
+              else if(EndTime<5)
               {
-                  bl_duty=980;
+                  bl_duty=970;
               }
               else
               {
                   bl_duty=500;
               }
-              if(EndTime>3)
+              if(EndTime>5)
               {
                   Speed.Set_Speed=0;
               }

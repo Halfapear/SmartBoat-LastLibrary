@@ -176,7 +176,7 @@ int Ring_Start_Test()
         abs(rd.Left_Lost_Time-rd.Right_Lost_Time)>20&&
         (rd.Left_Lost_Time+rd.Right_Lost_Time)<190&&
         Continuity_Change_Right(115,41)==0&&Continuity_Change_Left(115,41)!=0&&
-        Monotonicity_Change_Left(80,30)!=0&&Monotonicity_Change_Right(80,30)==0&&
+        Monotonicity_Change_Left(90,30)!=0&&Monotonicity_Change_Right(90,30)==0&&
         Find_Left_Down_Point(115,50)
         )
     {
@@ -185,8 +185,8 @@ int Ring_Start_Test()
     else if(rd.Left_Lost_Time<rd.Right_Lost_Time&&
             abs(rd.Left_Lost_Time-rd.Right_Lost_Time)>25&&
             (rd.Left_Lost_Time+rd.Right_Lost_Time)<190&&
-            Continuity_Change_Right(115,31)!=0&&Continuity_Change_Left(115,31)==0&&
-            Monotonicity_Change_Left(80,30)==0&&Monotonicity_Change_Right(80,30)!=0&&
+            Continuity_Change_Right(115,41)!=0&&Continuity_Change_Left(115,41)==0&&
+            Monotonicity_Change_Left(90,30)==0&&Monotonicity_Change_Right(90,30)!=0&&
             Find_Right_Down_Point(115,50)
             )
         {
@@ -248,7 +248,7 @@ void Ring_Search()
 void Add_line_from_left()
 {
     uint8 i=0;
-    for(i=0;i<120;i++)
+    for(i=30;i<120;i++)
     {
         if(l_border[i]>1)
         r_border[i]=l_border[i]+Standard_Road_Wide[i];
@@ -280,7 +280,7 @@ void Left_Ring()
     uint8 k_flag=0;
     if(rd.state==1)
             {
-                monotonicity_change_line[0]=Monotonicity_Change_Left(30,5);//寻找单调性改变点
+                monotonicity_change_line[0]=Monotonicity_Change_Left(50,10);//寻找单调性改变点
                 monotonicity_change_line[1]=l_border[monotonicity_change_line[0]];
                 Left_Add_Line((int)(monotonicity_change_line[1]*0.15),MT9V03X_H-1,monotonicity_change_line[1],monotonicity_change_line[0]);
                 if((rd.state==1)&&(rd.L_Edgepoint_y<=60))//下方当丢线时候进2
@@ -305,7 +305,7 @@ void Left_Ring()
                 {
                     if(k<1.3)
                         k=1.3;
-                    K_Draw_Line(k,MT9V03X_W-5,MT9V03X_H-20,0);//k是刚刚算出来的，静态变量存着
+                    K_Draw_Line(k,MT9V03X_W-5,MT9V03X_H-10,0);//k是刚刚算出来的，静态变量存着
                     image_process();//刷新边界数据
 
                 }
@@ -318,13 +318,13 @@ void Left_Ring()
                         rd.state=0;
                         rd.Ring_Flag=0;
                     }*/
-                    if(k==0&&(15<=Left_Up_Guai[0]&&Left_Up_Guai[0]<50)&&(50<Left_Up_Guai[1]&&Left_Up_Guai[1]<110)&&Left_Up_Guai[0]>5)//拐点出现在一定范围内，认为是拐点出现
+                    if(k==0&&(15<=Left_Up_Guai[0]&&Left_Up_Guai[0]<60)&&(50<Left_Up_Guai[1]&&Left_Up_Guai[1]<130)&&Left_Up_Guai[0]>5)//拐点出现在一定范围内，认为是拐点出现
                     {
                         island_state_3_up[0]= Left_Up_Guai[0];
                         island_state_3_up[1]= Left_Up_Guai[1];
                         k=(float)((float)(MT9V03X_H-island_state_3_up[0])/(float)(MT9V03X_W-20-island_state_3_up[1]));
-                        rd.add_k=k;
-                        K_Draw_Line(k,MT9V03X_W-30,MT9V03X_H-1,0);//记录下第一次上点出现时位置，针对这个环岛拉一条死线，入环
+
+                        K_Draw_Line(k,MT9V03X_W-30,MT9V03X_H-10,0);//记录下第一次上点出现时位置，针对这个环岛拉一条死线，入环
                         image_process();//刷新边界数据
                     }
                 }
@@ -355,21 +355,21 @@ void Left_Ring()
      else if(rd.state==5)//出环
             {
              if(k==0&&k_flag==0){
-                     monotonicity_change_line[0]=Monotonicity_Change_Left(115,30);//单调性改变
+                     monotonicity_change_line[0]=Monotonicity_Change_Right(115,30);//单调性改变
                      monotonicity_change_line[1]=l_border[monotonicity_change_line[0]];
                      k=(float)((float)(MT9V03X_H-monotonicity_change_line[0])/(float)(island_state_5_down[1]-monotonicity_change_line[1]));
                      k_flag=1;
 
             }
              if(k!=0){
-                 if(k<1.6)
-                      k=1.6;
+                 if(k<1.4)
+                      k=1.4;
                  if(k>2.2)
                       k=2.2;
                  rd.add_k=k;
                 K_Add_Boundry_Right(k,island_state_5_down[1],island_state_5_down[0],0);
              }
-                if((rd.state==5)&&(rd.R_Edgepoint_y<rd.L_Edgepoint_y)&&(abs(FJ_Angle)>345 ))//右边先丢线
+                if((rd.state==5)&&(abs(FJ_Angle)>342 ))//右边先丢线
                 {
                     rd.state=7;
                 }
@@ -412,10 +412,15 @@ void Left_Ring()
                             rd.state=9;//8时候环岛基本结束了，为了防止连续判环，8后会进9，大概几十毫秒后归零，
                             //rd.Ring_Flag=0;
                         }
+                        if(abs(FJ_Angle)>356)
+                        {
+                            rd.state=9;
+                        }
                     }
                     else if(rd.state==9)
                         {
-                        Add_line_from_right();
+                            if(abs(FJ_Angle)>358)
+                                Add_line_from_right();
                             if(rd.Ring_Leave_time>=3000)
                             {
                                 rd.state=0;

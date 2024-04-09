@@ -30,7 +30,7 @@ Turn_ct Turn;
 int16 bl_duty=0;
 
 int16 maxspeed=6500;
-int16 max_angle=170;
+int16 max_angle=180;
 
 
 int16 zhuanjiaozhi=0;
@@ -43,10 +43,10 @@ void Para_init()
     bl_duty=500;//无刷电机调速
     PWM.Left_Out=0;
     PWM.Right_Out=0;
-    Speed.Set_Speed=3800;
-    Speed.zhidao_Speed=3800;
-    Speed.wandao_Speed=3800;
-    //Speed.Speed_Max=4000;
+    Speed.Set_Speed=3200;
+    Speed.zhidao_Speed=5000;
+    Speed.wandao_Speed=4000;
+
 
     Speed.Speed_Now=0;
     Speed.Speed_Old=0;
@@ -79,8 +79,8 @@ void Para_init()
     Turn.turnI=0;
     Turn.turnD=0;
 
-    Turn.P=3.5;
-    Turn.I=0.1;
+    Turn.P=4;
+    Turn.I=0;
     Turn.D=4;
 }
 //编码器速度获取与处理
@@ -106,6 +106,7 @@ float constrain_float(float amt, float low, float high)
 //速度环pid
 void SpeedPID_Control()
 {
+
     Speed.Error=(Speed.Set_Speed-Speed.Speed_Car);
     Speed.Integral+=Speed.Error;
     Speed.Integral=constrain_float(Speed.Integral,-300,300);
@@ -118,6 +119,7 @@ void SpeedPID_Control()
         Speed.Output_PWM=5500;
     else if(Speed.Output_PWM<-5500)
         Speed.Output_PWM=-5500;
+
 }
 //转向环pd
 void TurnPD_Control()
@@ -135,10 +137,11 @@ void TurnPD_Control()
     Turn.turnI=Turn.intergrator*Turn.I;
     Turn.PWM_Dout=Turn.P*Turn.error+Turn.intergrator*Turn.I+Turn.D*(Turn.error-Turn.last_error);
     Turn.last_error = Turn.error;
-    if(Turn.PWM_Dout>75)
-        Turn.PWM_Dout=75;
-    else if(Turn.PWM_Dout<-75)
-        Turn.PWM_Dout=-75;
+    if(Turn.PWM_Dout>90)
+        Turn.PWM_Dout=90;
+    else if(Turn.PWM_Dout<-90)
+        Turn.PWM_Dout=-90;
+
 
 }
 //设置无刷电机的转速，duty范围500-1000
@@ -186,7 +189,7 @@ void set_brushless_duty(int16 duty)
 //            gpio_set_level(DIR_R2, GPIO_LOW);
 //            pwm_set_duty(PWM_R2,Turn.PWM_Rout);
 //            gpio_set_level(DIR_L1, GPIO_LOW);
-//            pwm_set_duty(PWM_L1,Turn.PWM_Rout*0.);
+//            pwm_set_duty(PWM_L1,Turn.PWM_Rout*0.4);
 //        }
 //        else {
 //            gpio_set_level(DIR_R2, GPIO_HIGH);
@@ -252,7 +255,6 @@ void PWM_Out()
 
 
 }
-
 void stop(){
     if(EndTime==0)
         EndTime=1;
