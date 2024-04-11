@@ -30,7 +30,7 @@ Turn_ct Turn;
 int16 bl_duty=0;
 
 int16 maxspeed=6500;
-int16 max_angle=180;
+int16 max_angle=120;
 
 
 int16 zhuanjiaozhi=0;
@@ -43,10 +43,10 @@ void Para_init()
     bl_duty=500;//无刷电机调速
     PWM.Left_Out=0;
     PWM.Right_Out=0;
-    Speed.Set_Speed=3200;
-    Speed.zhidao_Speed=5000;
-    Speed.wandao_Speed=4000;
-
+    Speed.Set_Speed=3000;
+    Speed.zhidao_Speed=3000;
+    Speed.wandao_Speed=3000;
+    //Speed.Speed_Max=4000;
 
     Speed.Speed_Now=0;
     Speed.Speed_Old=0;
@@ -79,9 +79,9 @@ void Para_init()
     Turn.turnI=0;
     Turn.turnD=0;
 
-    Turn.P=4;
-    Turn.I=0;
-    Turn.D=4;
+    Turn.P=2;
+    Turn.I=0.3;
+    Turn.D=2;
 }
 //编码器速度获取与处理
 //测速轮直径-3.3cm
@@ -204,7 +204,7 @@ void set_brushless_duty(int16 duty)
 void PWM_Out()
 {
     //速度环输出
-    Turn.PWM_Lout=Speed.Output_PWM*(1-Turn.PWM_Dout/max_angle)-1000;
+    Turn.PWM_Lout=Speed.Output_PWM*(1-Turn.PWM_Dout/max_angle);
     Turn.PWM_Rout=Speed.Output_PWM*(1+Turn.PWM_Dout/max_angle);
 
     if(Turn.PWM_Lout>maxspeed)

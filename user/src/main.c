@@ -164,9 +164,9 @@ int main (void)
          //Find_Up_Point( MT9V03X_H-1, 10 );
          //Find_Down_Point(MT9V03X_H-5,40);
          Cross_Detect();
-         if(s>50)
+         if(s>60)
              crosswalk();
-         if(s>11&&s<25&&r_border[80]>100)
+         if(s<28&&s>12&&r_border[80]>100)
              Add_line_from_right();
 //         if(s<0){
 //             Turn.P=3.5;
@@ -198,14 +198,6 @@ int main (void)
            {
                  Speed.Set_Speed=Speed.zhidao_Speed;
            }*/
-//         if(straight==0)
-//           {
-//                 Speed.Set_Speed=Speed.wandao_Speed;
-//            }
-//           else
-//           {
-//                 Speed.Set_Speed=Speed.zhidao_Speed;
-//           }
 
          if(garageout_flag==1)
              stop();

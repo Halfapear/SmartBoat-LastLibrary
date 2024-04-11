@@ -130,7 +130,6 @@ void Display_Grayscale_Image(void)
                 tft180_show_int(0,16*3,max_row,4);
                 //tft180_show_float(0,16*3,rd.add_k,2,3);
                 tft180_show_int(0,16*4,FJ_Angle,4);
-                tft180_show_int(0,16*5,s,4);
     for (int16 i = 0; i <image_h-1; i++)
        {
         tft180_draw_point(94,i,RGB565_YELLOW);
